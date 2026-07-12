@@ -29,6 +29,8 @@
 | 🥈 Todas (baseline) | 0.27 | 4/8 | +2.19 / -3.77 | Overfit |
 | 🥉 Tokyo+London | -0.76 | 1/8 | +1.03 / -1.99 | Overfit (pior) |
 
+> \* Sem filtro VIX. Com VIX_MAX_LEVEL=20: OOS **0.79**, 5/8 \>0.6 (ver seção 8)
+
 ### 3. Teste de Parametros — Reduzir MOMENTUM DESTROI tudo
 
 | Teste | Antes (MOM=264) | Depois (MOM=96) | Diferenca |

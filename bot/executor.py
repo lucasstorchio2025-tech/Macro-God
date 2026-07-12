@@ -85,8 +85,6 @@ COOLDOWN_SECONDS = C.COOLDOWN_BARS * 4 * 3600  # 12 barras H4 = 48h em segundos
 
 # Modo dry-run: limites mais apertados
 DRY_RUN_MODE = C.DRY_RUN_MODE
-if DRY_RUN_MODE:
-    notify("DRY-RUN MODE ATIVO — limites apertados ativos", "warn")
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
@@ -946,9 +944,14 @@ def run_once(state: dict) -> dict:
 
 # ============== LOOP ==============
 def main_loop():
-    notify("Wealth_Engine v2 bot iniciado em modo DEMO. Magic=%d. Poll=%ds. "
-           "Estrategia=ts_momentum (backtest Sharpe 0.62)." % (MAGIC, POLL_SECONDS), "info")
+    mode = "DRY-RUN" if DRY_RUN_MODE else "DEMO"
+    notify(f"Wealth_Engine v2 bot iniciado em modo {mode}. Magic={MAGIC}. Poll={POLL_SECONDS}s. "
+           f"Estrategia=ts_momentum (backtest Sharpe 1.14, WFO OOS 0.79 c/ VIX=20).", "info")
     state = load_state()
+    # Auto dry-run: se DRY_RUN_MODE=True, seta atributo na funcao run_once
+    if DRY_RUN_MODE:
+        run_once.dry_run = True
+        notify("DRY-RUN ATIVO: trades serao calculados mas NAO executados.", "warn")
     log_event("BOT_START", {
         "version": "v2", "poll_seconds": POLL_SECONDS, "magic": MAGIC,
         "symbols": SYMBOLS, "max_positions": MAX_OPEN_POSITIONS,
