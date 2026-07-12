@@ -10,7 +10,7 @@
 |---|---|---|
 | **Estratégia** | TS-Momentum (Moskowitz 2012) | Única com edge positivo |
 | **MOMENTUM_LOOKBACK_BARS** | 264 | ~1 ano de H4 |
-| **COOLDOWN_BARS** | 12 | ~2 dias entre reentradas |
+| **COOLDOWN_BARS** | 12 | ~48h entre reentradas. CRITICO: COOLDOWN=2 (8h) destrói edge (Sharpe 1.19→0.24) |
 | **SESSION_FILTER_ALLOW** | ["Tokyo"] | Só Tokyo — melhor sessão |
 | **VIX_MAX_LEVEL** | **20.0** | Bloqueia se VIX > 20 |
 | **DRY_RUN_MODE** | **True** | Stop semanal -8%, ativo |

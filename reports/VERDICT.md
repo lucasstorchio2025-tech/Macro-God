@@ -130,6 +130,22 @@ O VIX chegou a 31.0 nesta janela, então o filtro VIX=20 teria bloqueado.
 
 **Config atualizada:** `VIX_MAX_LEVEL = 20.0`
 
+### 9. Teste COOLDOWN — Reduzir DESTROI o edge
+
+Testamos 3 níveis de COOLDOWN_BARS no backtest completo (VIX=20, Tokyo, MOM=264):
+
+| Config | Horas | Sharpe | Ret% | DD% | Trades | Final$ |
+|---|---|---|---|---|---|---|
+| **COOLDOWN=12** | **48h** | **1.19** | +114.1% | -18.9% | 233 | $1,070 |
+| COOLDOWN=4 | 16h | 0.40 | +30.6% | -31.2% | 367 | $653 |
+| COOLDOWN=2 | 8h | 0.24 | +13.7% | -36.1% | 387 | $568 |
+
+**Conclusão:** COOLDOWN_BARS=12 (48h) é CRÍTICO para o edge do TS-Momentum.
+Reduzir o cooldown faz o sistema reentrar após stops-loss, e a reentrada
+rápida em tendência moribunda é o principal destruidor de edge.
+
+**Mantido:** `COOLDOWN_BARS = 12`
+
 ---
 
 ### 4. Estratégias Alternativas Testadas — Nenhuma supera TS-Momentum
