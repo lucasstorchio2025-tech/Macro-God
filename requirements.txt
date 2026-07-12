@@ -1,0 +1,14 @@
+# Wealth_Engine v2 — dependências
+# Instalar: pip install -r requirements.txt
+
+MetaTrader5>=5.0.4500
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+scipy>=1.10.0
+yfinance>=0.2.18
+requests>=2.28.0
+feedparser>=6.0.0
+python-dotenv>=1.0.0
+pyarrow>=12.0.0
+streamlit>=1.20.0

@@ -1,0 +1,56 @@
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# ─── IDE / OS ───
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Credenciais ───
+.env
+.env.*
+!env.example
+
+# ─── Dados cacheados (regeneraveis) ───
+engine/cache/*.parquet
+engine/cache/*.csv
+!engine/cache/.gitkeep
+
+# ─── Runtime state / logs ───
+bot/bot_state.json
+bot/trade_log.jsonl
+bot/decision_log.jsonl
+
+# ─── Dados de mercado gerados ───
+market_intelligence.json
+market_snapshot.json
+filtered_news.json
+raw_macro_rss.json
+wealth_ledger.json
+
+# ─── Relatorios gerados (mantem .md, exclui .csv, .png, .jsonl) ───
+reports/*.csv
+reports/*.png
+reports/*.jsonl
+reports/TUNE_RESULT.json
+
+# ─── Git ───
+*.orig
+*.bak
+
+# ─── Logs ───
+*.log
