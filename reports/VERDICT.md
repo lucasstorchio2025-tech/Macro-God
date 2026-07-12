@@ -10,7 +10,7 @@
 
 | Config | Trades | Sharpe | Ret% | DD% | Final$ | Veredito |
 |---|---|---|---|---|---|---|
-| **🥇 So Tokyo (MOM=264, VIX=20)** | 334 | **1.14** | +124.5% | -18.9% | $1,122 | Completo = SIM / WFO = MELHOROU (OOS 0.79) |
+| **🥇 So Tokyo (MOM=264, VIX=20)** | 233 | **1.19** | +114.1% | -18.9% | $1,071 | Completo = SIM / WFO = 0.79 ACEITAVEL |
 | BASELINE (MOM=264, todas sessoes) | 381 | 0.26 | +15.7% | -36.4% | $578 | Fraco |
 | Tokyo+Lookback (MOM=96) | 426 | -0.41 | -34.5% | -59.9% | $327 | ❌ Ruim |
 | TUDO COMBINADO | 276 | -0.41 | -39.2% | -67.0% | $304 | ❌ Ruim |
@@ -52,9 +52,9 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Sharpe período completo | **1.14** |
+| Sharpe período completo (c/ VIX=20) | **1.19** 🔥 (era 1.14 sem filtro) |
 | Max DD | **-18.9%** |
-| Retorno total | **+124.5%** |
+| Retorno total (c/ VIX=20) | **+114.1%** |
 | WFO OOS médio (c/ VIX_MAX_LEVEL=20) | **0.79** 🔥 (era 0.41 sem filtro) |
 | WFO > 0.6 (c/ VIX_MAX_LEVEL=20) | **5/8 janelas** 🔥 (era 3/8) |
 
