@@ -51,7 +51,7 @@
 
 **Saldo inicial da semana:** $409,99 → **Saldo atual: $566,40** (+38,2% na semana)
 
-> ℹ️ Após a correção dos parâmetros de risco (hard_cap = 7.5%), o lote mínimo de XAUUSDm (~$60 de risco) ainda excede o cap para o saldo atual. O bot está recusando corretamente novas entradas até o saldo crescer o suficiente para caber no limite de risco.
+> ℹ️ **ATUALIZAÇÃO:** Os limites de risco foram ajustados (12% = 12% = 12% ≤ 15%) — XAUUSDm com lote 0.01 agora passa pelo filtro `risk_cap`. Atenção: um único trade no stop consome o orçamento diário inteiro (12%) e ~80% do semanal (15%). Duas perdas na mesma semana estouram o circuito semanal. Recomenda-se revisar os limites de volta pra 8% assim que o saldo bater ~$800+.
 
 ---
 

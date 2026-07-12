@@ -144,8 +144,8 @@ if log_path.exists():
                 try:
                     dt = datetime.fromisoformat(last_ts.replace('Z', '+00:00'))
                     print(f'  Ultima decisao: {_ago(dt)}')
-            except:
-                print(f'  Ultima decisao: {last_ts[:19]}')
+                except:
+                    print(f'  Ultima decisao: {last_ts[:19]}')
     except Exception as e:
         print(f'  Erro lendo decision_log: {e}')
 else:
