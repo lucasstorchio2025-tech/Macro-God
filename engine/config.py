@@ -53,11 +53,20 @@ MAX_OPEN_POSITIONS  = 1          # XAUUSD — máximo 1 posição (apenas 1 sím
 # Modo dry-run: limites MAIS APERTADOS para proteger capital durante validação
 # ao vivo (mesmo com overfit confirmado no WFO).
 # Ativar colocando DRY_RUN_MODE = True antes de ir pra live.
-DRY_RUN_MODE = False             # True = ativa limites mais apertados
+DRY_RUN_MODE = True              # True = ativa limites mais apertados para dry-run
 DRY_RUN_WEEKLY_DD_PCT = 8.0      # Stop semanal apertado em dry-run (-8%)
 DRY_RUN_DAILY_DD_PCT = 8.0       # Stop diário apertado em dry-run (-8%)
 DRY_RUN_MAX_POSITIONS = 1        # Máximo 1 posição em dry-run (conservador)
-# NOTA: Antes era 3 quando o universo tinha 4 pares (EURUSDm, GBPUSDm, USDJPYm, XAUUSDm).
+
+# ───────────────────────── FILTRO DE VIX MÁXIMO ─────────────────────────
+# Bloqueia entradas se o VIX está acima deste nível.
+# A lógica: VIX alto = estresse de mercado = momentum quebra.
+# Baseado na análise WFO: janelas boas tem VIX medio 18.3 vs ruins 17.9
+# (diferenca marginal), mas VIX > 25 aparece em janela ruim (w1: VIX 23.5).
+# 0 = desativado.
+VIX_MAX_LEVEL = 25.0              # Bloqueia se VIX > 25. 0 = desativado.
+
+# NOTA (MAX_OPEN_POSITIONS): Antes era 3 quando o universo tinha 4 pares.
 # Com SYMBOLS=["XAUUSDm"] e anti-empilhamento ativo, 3 posições simultâneas é impossível.
 # Mantido com valor 1 para clareza — se expandir para múltiplos símbolos no futuro, aumentar.
 # XAUUSDm: lote mínimo 0.01 = ~10.6% risco com $566 de saldo (varia com ATR).
@@ -367,6 +376,7 @@ __all__ = [
     "GE_CORR_WINDOW_DAYS", "GE_CORR_RISKON_THRESHOLD",
     "GE_CORR_FAKE_RISKON_THRESHOLD", "GE_CORR_PANIC_THRESHOLD",
     "DRY_RUN_MODE", "DRY_RUN_WEEKLY_DD_PCT", "DRY_RUN_DAILY_DD_PCT", "DRY_RUN_MAX_POSITIONS",
+    "VIX_MAX_LEVEL",
     "DXY_LIQUIDITY_STRESS_ENABLED", "DXY_LIQUIDITY_STRESS_UP_PCT",
     "VIX_LIQUIDITY_STRESS_UP_PCT", "DXY_LIQUIDITY_STRESS_LOOKBACK_BARS",
     "MOMENTUM_LOOKBACK_BARS", "MOMENTUM_SKIP_BARS",

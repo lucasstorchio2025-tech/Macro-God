@@ -644,7 +644,25 @@ def run_once(state: dict) -> dict:
         mt5.shutdown()
         return summary
 
-    # FILTRO 5: exposicao total aberta
+    # FILTRO 5: VIX max level (bloqueia se VIX > limite)
+    vix_blocked_reason = None
+    if C.VIX_MAX_LEVEL > 0 and intel:
+        vix = intel.get("risk_sentiment", {}).get("vix")
+        if vix is not None and vix > C.VIX_MAX_LEVEL:
+            vix_blocked_reason = f"VIX {vix:.1f} > {C.VIX_MAX_LEVEL} (VIX_MAX_LEVEL). Bloqueado."
+            for sym in SYMBOLS:
+                log_decision(decision_ctx, sym, "NONE", "blocked_filter",
+                             {"reason": vix_blocked_reason, "vix": vix},
+                             filter_blocked="vix_max_level")
+            summary["actions"].append({"step": "vix_filter", "ok": False,
+                                        "motivo": vix_blocked_reason,
+                                        "vix": vix, "vix_max_level": C.VIX_MAX_LEVEL})
+            log_event("CYCLE_BLOCKED_VIX", summary)
+            notify(vix_blocked_reason, "warn")
+            mt5.shutdown()
+            return summary
+
+    # FILTRO 6: exposicao total aberta
     ok_expo, expo_pct = check_total_exposure(balance)
     summary["exposure_pct"] = expo_pct
     if not ok_expo:

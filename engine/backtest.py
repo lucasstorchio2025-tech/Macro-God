@@ -328,6 +328,14 @@ def run_backtest(
                              last_exit=last_exit, bar_idx=i)
             open_positions = []
 
+        # ── 3a. VIX MAX FILTER: bloqueia entradas se VIX > limite ──
+        vix_blocked = False
+        if C.VIX_MAX_LEVEL > 0 and regime_provider is not None:
+            if hasattr(regime_provider, "vix_level_at"):
+                vix_val = regime_provider.vix_level_at(ts)
+                if vix_val is not None and vix_val > C.VIX_MAX_LEVEL:
+                    vix_blocked = True
+
         # ── 3b. Atualiza loss streak baseado nos trades que fecharam NESTA barra ──
         # Verifica os trades fechados nesta iteração (os que têm exit_time == ts)
         new_closes = [t for t in closed_trades if t.exit_time == ts]
@@ -390,7 +398,7 @@ def run_backtest(
         # Loss streak cooldown: se está em streak, bloqueia novas entradas
         in_loss_streak_cooldown = (loss_streak >= C.MAX_LOSS_STREAK and
                                    (i - loss_streak_start_bar) < C.LOSS_STREAK_COOLDOWN_BARS)
-        if slots > 0 and scale > 0.05 and not in_loss_streak_cooldown:
+        if slots > 0 and scale > 0.05 and not in_loss_streak_cooldown and not vix_blocked:
             ctx = ctx_at(i)
             ctx["regime"] = regime  # Informa o regime atual pra estrategia (ex: CompositeStrategy)
             sigs = strategy.signals(ctx) if hasattr(strategy, "signals") else {}

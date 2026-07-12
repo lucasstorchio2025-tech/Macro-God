@@ -83,6 +83,17 @@ class RuleBasedRegime(RegimeProvider):
             self._corr_pairs, _ = rolling_correlation_matrix(
                 prices_for_corr, C.CORREL_LOOKBACK_BARS)
 
+    def vix_level_at(self, ts: pd.Timestamp) -> Optional[float]:
+        """Retorna o nível do VIX no timestamp ts (sem lookahead).
+        Usado pelo filtro VIX_MAX_LEVEL para bloquear entradas em VIX alto.
+        """
+        if self._vix is None or self._vix.empty:
+            return None
+        sub = self._vix.loc[:ts].dropna()
+        if sub.empty:
+            return None
+        return float(sub.iloc[-1])
+
     def at(self, ts: pd.Timestamp, ctx: dict) -> str:
         vix_val = _last_known(self._vix, ts)
         vix_pct = _last_known(self._vix_pct, ts) if self._vix_pct is not None else None
