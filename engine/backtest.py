@@ -168,11 +168,22 @@ def run_backtest(
     def _swap_cost(pos) -> float:
         """Custo de swap para esta posição na barra atual.
         Retorna custo negativo para long, positivo para short (como na vida real).
+
+        CORREÇÃO: anteriormente usava pos.size_frac (fração de risco) como se fosse
+        lote — incorreto. SWAP_*_USD_PER_LOT é por lote padrão (1.0 = 100 oz XAUUSD).
+        Agora converte risk_usd + stop_dist em lotes equivalentes:
+            lotes = risk_usd / (stop_dist * CONTRACT_VALUE_PER_UNIT[sym])
         """
+        stop_dist = pos._original_stop_move
+        risk = pos.risk_usd
+        if stop_dist <= 0 or risk <= 0:
+            return 0.0
+        cv = C.CONTRACT_VALUE_PER_UNIT.get(pos.symbol, 100.0)
+        lots = risk / (stop_dist * cv)
         if pos.direction == "BUY":
-            return C.SWAP_LONG_USD_PER_LOT.get(pos.symbol, 0.0) * pos.size_frac
+            return C.SWAP_LONG_USD_PER_LOT.get(pos.symbol, 0.0) * lots
         else:
-            return C.SWAP_SHORT_USD_PER_LOT.get(pos.symbol, 0.0) * pos.size_frac
+            return C.SWAP_SHORT_USD_PER_LOT.get(pos.symbol, 0.0) * lots
 
     # helper: contexto passado à estratégia (snapshot imutável do "passado")
     def ctx_at(t_idx: int) -> dict:

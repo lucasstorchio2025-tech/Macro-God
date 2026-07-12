@@ -114,6 +114,18 @@ SWAP_LONG_USD_PER_LOT: dict[str, float] = {"XAUUSDm": -3.0}
 SWAP_SHORT_USD_PER_LOT: dict[str, float] = {"XAUUSDm": 1.5}
 SWAP_TRIPLE_ON_WEDNESDAY: bool = True   # quarta-feira = 3x swap (rollover de sexta)
 
+# Valor em USD da variação de 1 unidade de preço por lote padrão (1.0).
+# Usado pelo backtest para converter risco em lotes equivalentes no cálculo de swap.
+#
+# Fórmula: lotes = risk_usd / (stop_dist * CONTRACT_VALUE_PER_UNIT[sym])
+# 
+# XAUUSD: 1 lote padrão = 100 oz. Variação de $1/oz → $100 no contrato.
+# EURUSD: 1 lote padrão = 100.000 EUR. Variação de 0.0001 (1 pip) → $10.
+# GBpUSD: mesmo EURUSD (USD quote).
+# USDJPY: 1 lote = 100.000 USD. Variação de 0.01 (1 yen) depende da cotação.
+#
+CONTRACT_VALUE_PER_UNIT: dict[str, float] = {"XAUUSDm": 100.0}
+
 
 # ───────────────────────── ESTOP / ATR ─────────────────────────
 ATR_PERIOD        = 14           # mesmo do market_intelligence.py original

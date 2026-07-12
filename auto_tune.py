@@ -335,6 +335,12 @@ def main():
                     print(f"   {test_result.stderr[-500:]}")
                     result["post_apply_tests_ok"] = False
                     result["post_apply_test_output"] = test_result.stdout[-500:] + test_result.stderr[-500:]
+                    # REVERTE as alterações quando os testes falham (igual ao revert do import)
+                    print(f"   REVERTENDO alteracoes devido a falha nos testes...")
+                    subprocess.run(["git", "checkout", "--", str(CONFIG_PATH)], capture_output=True)
+                    print(f"   [REVERTIDO] config.py voltou ao estado anterior ao --apply.")
+                    result["config_updated"] = False
+                    result["reverted"] = True
 
             except Exception as e:
                 print(f"   [ERRO] config.py corrompido apos patch: {e}")
