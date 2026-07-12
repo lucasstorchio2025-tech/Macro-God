@@ -29,8 +29,8 @@ from typing import Optional
 V2_START_UTC = datetime(2026, 7, 3, tzinfo=timezone.utc)
 
 # ═════════════════════════════ PATHS ═════════════════════════════
-BOT_DIR = Path(r"C:\Users\lucas\Wealth_Engine\bot")
-PROJECT_ROOT = BOT_DIR.parent
+BOT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 REPORTS_DIR = PROJECT_ROOT / "reports"
 LOG_PATH = BOT_DIR / "trade_log.jsonl"
 DECISION_LOG_PATH = BOT_DIR / "decision_log.jsonl"

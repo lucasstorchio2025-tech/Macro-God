@@ -36,8 +36,8 @@ if (Test-Path $shortcutPath) {
 
 $wshShell = New-Object -ComObject WScript.Shell
 $shortcut = $wshShell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = "C:\Users\lucas\Wealth_Engine\bot\abrir_dashboard.bat"
-$shortcut.WorkingDirectory = "C:\Users\lucas\Wealth_Engine"
+$shortcut.TargetPath = "$env:USERPROFILE\Wealth_Engine\bot\abrir_dashboard.bat"
+$shortcut.WorkingDirectory = "$env:USERPROFILE\Wealth_Engine"
 $shortcut.WindowStyle = 7
 $shortcut.Description = "Wealth Engine - Painel Mestre (inicia automaticamente ao ligar o PC)"
 $shortcut.Save()

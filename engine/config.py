@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 # ───────────────────────── PATHS ─────────────────────────
-PROJECT_ROOT = Path(r"C:\Users\lucas\Wealth_Engine")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ENGINE_DIR   = PROJECT_ROOT / "engine"
 CACHE_DIR    = PROJECT_ROOT / "engine" / "cache"   # histórico em parquet/CSV
 REPORTS_DIR  = PROJECT_ROOT / "reports"
@@ -47,13 +47,25 @@ END_DEFAULT      = "2026-06-30"  # fim do backtest (snapshot do projeto)
 # ───────────────────────── RISCO ─────────────────────────
 ACCOUNT_START_USD   = 500.0      # saldo inicial do backtest (mesmo da demo)
 RISK_PER_TRADE_PCT  = 5.0        # teto padrão de risco por trade (% do saldo)
-MAX_OPEN_POSITIONS  = 3          # XAUUSD — máximo 3 posições simultâneas (testado em dry-run)
-# XAUUSDm: lote mínimo 0.01 = ~16% risco com $410 de saldo (varia com ATR).
-RISK_OVERRIDE_PCT: dict[str, float] = {"XAUUSDm": 18.0}
+MAX_OPEN_POSITIONS  = 1          # XAUUSD — máximo 1 posição (apenas 1 símbolo ativo no momento).
+# NOTA: Antes era 3 quando o universo tinha 4 pares (EURUSDm, GBPUSDm, USDJPYm, XAUUSDm).
+# Com SYMBOLS=["XAUUSDm"] e anti-empilhamento ativo, 3 posições simultâneas é impossível.
+# Mantido com valor 1 para clareza — se expandir para múltiplos símbolos no futuro, aumentar.
+# XAUUSDm: lote mínimo 0.01 = ~14.68% risco com $410 de saldo (varia com ATR).
+# IMPORTANTE: Override NÃO pode exceder WEEKLY_DD_PCT (15%) nem DAILY_DD_PCT (8%) —
+# senão um único trade estoura os circuit breakers e o sistema para o dia/semana.
+# Com conta atual ~$410, lote 0.01 de XAUUSDm = ~14.68% risco → trades serão
+# REJEITADOS até a conta crescer ou aumentar o capital. Isto é INTENCIONAL:
+# operar com risco que estoura o DD diário/semanal invalida a proteção.
+RISK_OVERRIDE_PCT: dict[str, float] = {"XAUUSDm": 7.5}
 MIN_REWARD_RISK     = 2.0        # RR mínimo
 DAILY_DD_PCT        = 8.0        # pausa o dia
 WEEKLY_DD_PCT       = 15.0       # pausa a semana
-TOTAL_RISK_CAP_PCT  = 18.0       # exposição aberta somada <= 18%. Alinhado com RISK_OVERRIDE_PCT do XAUUSDm.
+TOTAL_RISK_CAP_PCT  = 8.0       # exposição aberta somada <= 8%. Alinhado com DAILY_DD_PCT.
+# NOTA: Antes era 18% (alinhado com RISK_OVERRIDE_PCT), mas isso permitia
+# que um único trade consumisse TODO o orçamento de drawdown diário e semanal.
+# Agora TOTAL_RISK_CAP_PCT = DAILY_DD_PCT = 8% — qualquer trade que exceda
+# esse limite é REJEITADO independente do override do símbolo.
 
 # Custos de transação honestos. Sem isto, qualquer backtest mente.
 # Spread em PONTOS (mesma unidade de symbol_info.spread). Slippage conservador.
@@ -243,6 +255,10 @@ GE_CORR_PANIC_THRESHOLD     = 0.6    # Correlação >= +0.6 = tudo andando junto
 #
 # Lógica: DXY subindo forte (> threshold) + VIX subindo (> threshold) = liquidez estressada.
 # O regime é escalado: normal → risk_off, risk_off → crisis.
+#
+# AVISO EM WALK-FORWARD.md: LiquidityStressSignal NÃO agregou valor OOS (0/8 janelas).
+# A flag abaixo permite desligar sem remover o código, caso nova validação confirme.
+DXY_LIQUIDITY_STRESS_ENABLED       = False  # FALSE = desligado (não agregou valor OOS, ver WALK_FORWARD.md)
 DXY_LIQUIDITY_STRESS_UP_PCT       = 0.5    # DXY sobe >= 0.5% = candidato a stress de liquidez (otimizado via sweep)
 VIX_LIQUIDITY_STRESS_UP_PCT        = 10.0   # VIX sobe >= 10% = medo crescendo (confirma stress, otimizado via sweep)
 DXY_LIQUIDITY_STRESS_LOOKBACK_BARS = 4      # janela H4 pra calcular % change
@@ -316,8 +332,8 @@ __all__ = [
     "EXPOSURE_SCALE",
     "GE_CORR_WINDOW_DAYS", "GE_CORR_RISKON_THRESHOLD",
     "GE_CORR_FAKE_RISKON_THRESHOLD", "GE_CORR_PANIC_THRESHOLD",
-    "DXY_LIQUIDITY_STRESS_UP_PCT", "VIX_LIQUIDITY_STRESS_UP_PCT",
-    "DXY_LIQUIDITY_STRESS_LOOKBACK_BARS",
+    "DXY_LIQUIDITY_STRESS_ENABLED", "DXY_LIQUIDITY_STRESS_UP_PCT",
+    "VIX_LIQUIDITY_STRESS_UP_PCT", "DXY_LIQUIDITY_STRESS_LOOKBACK_BARS",
     "MOMENTUM_LOOKBACK_BARS", "MOMENTUM_SKIP_BARS",
     "MOMENTUM_MIN_ABS_R", "COT_ZSCORE_LOOKBACK_WEEKS", "COT_ZSCORE_ENTRY",
     "CORREL_LOOKBACK_BARS", "CORREL_DUP_LIMIT", "USD_EXPOSURE_CAP",

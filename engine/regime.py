@@ -151,25 +151,29 @@ class RuleBasedRegime(RegimeProvider):
         # ═══════════════════════════════════════════════════════════════
         # CAMADA 4: LIQUIDITY STRESS / DOLLAR SAFE-HAVEN
         # ═══════════════════════════════════════════════════════════════
-        dxy_chg = ctx.get("dxy_pct_change") if ctx else None
-        vix_chg = ctx.get("vix_pct_change") if ctx else None
+        # Walk-forward validation (WALK_FORWARD.md) mostrou que este sinal NÃO
+        # agregou valor OOS (0/8 janelas). Mantido no código com flag de
+        # liga/desliga (DXY_LIQUIDITY_STRESS_ENABLED) para re-testes futuros.
+        if C.DXY_LIQUIDITY_STRESS_ENABLED:
+            dxy_chg = ctx.get("dxy_pct_change") if ctx else None
+            vix_chg = ctx.get("vix_pct_change") if ctx else None
 
-        if dxy_chg is not None and vix_chg is not None:
-            dxy_up = dxy_chg >= C.DXY_LIQUIDITY_STRESS_UP_PCT
-            vix_up = vix_chg >= C.VIX_LIQUIDITY_STRESS_UP_PCT
-            dxy_very_strong = dxy_chg >= C.DXY_LIQUIDITY_STRESS_UP_PCT * 2
+            if dxy_chg is not None and vix_chg is not None:
+                dxy_up = dxy_chg >= C.DXY_LIQUIDITY_STRESS_UP_PCT
+                vix_up = vix_chg >= C.VIX_LIQUIDITY_STRESS_UP_PCT
+                dxy_very_strong = dxy_chg >= C.DXY_LIQUIDITY_STRESS_UP_PCT * 2
 
-            if dxy_up and vix_up:
-                # Flight-to-dollar confirmado: escala o regime pra cima
-                if base_regime == "normal":
-                    return "risk_off"
-                elif base_regime == "risk_off":
-                    return "crisis"
-                elif base_regime == "risk_on":
-                    return "risk_off"  # stress de liquidez > risk_on
-            elif dxy_very_strong and base_regime != "crisis":
-                if base_regime == "risk_on":
-                    return "normal"
+                if dxy_up and vix_up:
+                    # Flight-to-dollar confirmado: escala o regime pra cima
+                    if base_regime == "normal":
+                        return "risk_off"
+                    elif base_regime == "risk_off":
+                        return "crisis"
+                    elif base_regime == "risk_on":
+                        return "risk_off"  # stress de liquidez > risk_on
+                elif dxy_very_strong and base_regime != "crisis":
+                    if base_regime == "risk_on":
+                        return "normal"
 
         return base_regime
 

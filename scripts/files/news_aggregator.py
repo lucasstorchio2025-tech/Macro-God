@@ -28,8 +28,9 @@ from datetime import datetime, timezone
 # Carrega chaves e modelos do .env (sem editar o script)
 try:
     from dotenv import load_dotenv
-    if os.path.exists(r"C:\Users\lucas\.hermes\.env"):
-        load_dotenv(r"C:\Users\lucas\.hermes\.env", override=False)
+    _hermes_env = str(Path.home() / ".hermes" / ".env")
+    if os.path.exists(_hermes_env):
+        load_dotenv(_hermes_env, override=False)
 except ImportError:
     pass
 
@@ -37,9 +38,10 @@ import feedparser
 import requests
 
 # ============== CONFIG ==============
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/chat")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma4-opt:latest")
-OUTPUT_PATH = os.environ.get("WEALTH_NEWS_PATH", r"C:\Users\lucas\Wealth_Engine\filtered_news.json")
+OUTPUT_PATH = os.environ.get("WEALTH_NEWS_PATH", str(_PROJECT_ROOT / "filtered_news.json"))
 MAX_PER_BATCH = 12  # quantas manchetes manda pro modelo classificar por chamada
 
 # Fontes fixas (oficiais, confirmadas, alta confiabilidade)

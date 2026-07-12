@@ -51,7 +51,7 @@ from decision_log import build_decision_context, log_decision
 from dotenv import load_dotenv
 # Carrega ambos: .hermes (credenciais Exness) primeiro, depois .env do projeto
 # (Telegram etc). override=False preserva vars ja definidas.
-load_dotenv(r"C:\Users\lucas\.hermes\.env", override=False)
+load_dotenv(str(Path.home() / ".hermes" / ".env"), override=False)
 load_dotenv(str(Path(__file__).resolve().parent.parent / ".env"), override=False)
 
 import MetaTrader5 as mt5
@@ -63,11 +63,11 @@ from engine.meta_config import MetaState, load_meta_state, save_meta_state
 from engine.meta_learner import consult_llm, quick_analysis
 
 # ============== PATHS ==============
-BOT_DIR = Path(r"C:\Users\lucas\Wealth_Engine\bot")
+BOT_DIR = Path(__file__).resolve().parent
 BOT_DIR.mkdir(parents=True, exist_ok=True)
 LOG_PATH = BOT_DIR / "trade_log.jsonl"
 STATE_PATH = BOT_DIR / "bot_state.json"
-INTEL_PATH = Path(r"C:\Users\lucas\Wealth_Engine\market_intelligence.json")
+INTEL_PATH = Path(__file__).resolve().parent.parent / "market_intelligence.json"
 
 # ============== CONFIG (importada do engine) ==============
 SYMBOLS = C.SYMBOLS
@@ -776,10 +776,16 @@ def run_once(state: dict) -> dict:
                 signal_log.append({"symbol": sym, "skipped": f"rr {rr_real:.2f} < {MIN_RR}"})
                 continue
 
-            # Risco real check: se o lote mínimo já excede o cap, usa override se existir, senão REJEITA
-            # XAUUSDm: lote 0.01 = ~14.68% risco. Usa override de 15% pra permitir.
+            # Risco real check: se o lote mínimo já excede o cap, REJEITA o trade.
+            # O override (RISK_OVERRIDE_PCT) deve ser <= DAILY_DD_PCT para preservar
+            # os circuit breakers. Se o lote mínimo do broker excede o override,
+            # o trade é honestamente rejeitado — não se força entrada com risco alto.
             effective_cap = RISK_OVERRIDE_PCT.get(sym, RISK_PER_TRADE_PCT)
-            if real_risk_pct > effective_cap:
+            # Camada extra de segurança: override não pode estourar DAILY_DD_PCT
+            hard_cap = effective_cap
+            if hard_cap > DAILY_DD_PCT:
+                hard_cap = DAILY_DD_PCT
+            if real_risk_pct > hard_cap:
                 log_decision(decision_ctx, sym, direction, "blocked_filter", {
                     "reason": f"Risco real {real_risk_pct:.1f}% > cap {effective_cap}% (lote minimo excede)",
                     "lot_calculated": lot, "real_risk_pct": real_risk_pct,

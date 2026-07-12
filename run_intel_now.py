@@ -1,9 +1,10 @@
 """Smoke run do market_intelligence.py com credenciais do .env.
 Le credenciais, conecta MT5, monta o hub, e imprime o JSON completo."""
 import os, sys, json
+from pathlib import Path
 
 # Carrega .env sem dependencia
-env_path = r"C:\Users\lucas\.hermes\.env"
+env_path = str(Path.home() / ".hermes" / ".env")
 with open(env_path, encoding="utf-8") as f:
     for line in f:
         line = line.strip()
@@ -11,12 +12,13 @@ with open(env_path, encoding="utf-8") as f:
         k,_,v = line.partition("="); v=v.strip().strip('"').strip("'")
         if k.startswith("EXNESS_"): os.environ[k]=v
 
-sys.path.insert(0, r"C:\Users\lucas\Wealth_Engine\scripts\files")
+_PROJECT_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(_PROJECT_ROOT / "scripts" / "files"))
 import market_intelligence as mi
 
 # Sobrescreve config do modulo com credenciais reais do .env
 mi.FRED_API_KEY = os.environ.get("FRED_API_KEY", mi.FRED_API_KEY) if "FRED_API_KEY" in os.environ else mi.FRED_API_KEY
-mi.OUTPUT_PATH = r"C:\Users\lucas\Wealth_Engine\market_intelligence.json"
+mi.OUTPUT_PATH = str(_PROJECT_ROOT / "market_intelligence.json")
 
 # Garante login automatico dentro do hub
 real_init = mi.get_mt5_prices

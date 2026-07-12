@@ -28,7 +28,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-BOT_DIR = Path(r"C:\Users\lucas\Wealth_Engine\bot")
+BOT_DIR = Path(__file__).resolve().parent
 DECISION_LOG_PATH = BOT_DIR / "decision_log.jsonl"
 
 

@@ -2,7 +2,7 @@
 rem Watchdog externo - relanca o executor se cair + atualiza intel a cada ~4h
 rem Usa WMIC (mais confiavel) com fallback pra tasklist
 title Wealth_Engine_Watchdog_v2
-cd /d C:\Users\lucas\Wealth_Engine
+cd /d %~dp0..
 
 set /a intel_counter=0
 set /a intel_interval=120
@@ -21,7 +21,7 @@ if %DETECTED% NEQ 0 (
 
 if %DETECTED% NEQ 0 (
     echo [%date% %time%] Executor NAO detectado. Relancando...
-    start /min "Wealth_Engine_AutoTrader" cmd /c "C:\Users\lucas\Wealth_Engine\bot\run_executor.bat"
+    start /min "Wealth_Engine_AutoTrader" cmd /c "%~dp0run_executor.bat"
     echo [%date% %time%] Relancado. Aguardando 60s.
     timeout /t 60 /nobreak >nul
 ) else (
@@ -33,7 +33,7 @@ rem ---- 2. A cada ~4h, atualiza intelligence + analise pos-trade ----
 set /a intel_counter+=1
 if %intel_counter% GEQ %intel_interval% (
     echo [%date% %time%] --- Atualizando intelligence ---
-    start /min "Wealth_Intel" cmd /c "C:\Users\lucas\Wealth_Engine\bot\auto_intel.bat"
+    start /min "Wealth_Intel" cmd /c "%~dp0auto_intel.bat"
     set /a intel_counter=0
 )
 

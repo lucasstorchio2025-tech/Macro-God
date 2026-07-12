@@ -1,6 +1,6 @@
 @echo off
 title Wealth_Engine - Improvement Loop
-cd /d "C:\Users\lucas\Wealth_Engine"
+cd /d "%~dp0"
 
 echo ============================================================
 echo   WEALTH ENGINE - CICLO DE MELHORIA CONTINUA

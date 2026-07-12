@@ -48,27 +48,37 @@ def test_momentum_signal_causal():
 
 
 def test_momentum_only_uses_past():
-    """Confirma que o sinal usa só dados até ts (shift implementa causalidade)."""
+    """Confirma que o sinal usa só dados até ts (shift implementa causalidade).
+
+    Calcula o sinal em ts_prev com dados originais e com dados onde a barra
+    futura (ts) foi alterada drasticamente. Se houver lookahead, os sinais
+    diferem — e o teste falha.
+    """
     df = _synthetic_prices(MOMENTUM_LOOKBACK_BARS + 50)
     prices = {"TEST": df}
     strat = TSMomentumStrategy()
 
-    ts = df.index[-1]
-    ctx = {"ts": ts, "prices": prices, "open": []}
-    sig1 = strat.signals(ctx)
+    ts_prev = df.index[-2]
 
-    # altera a ÚLTIMA barra (futuro relativo a ts-1) — não deve mudar o sinal de ts-1
+    # Sinal em ts_prev com dados ORIGINAIS
+    ctx_orig = {"ts": ts_prev, "prices": prices, "open": []}
+    sig_orig = strat.signals(ctx_orig)
+    d_orig = sig_orig.get("TEST", ("NONE", 0))[0]
+
+    # Altera a ÚLTIMA barra (futuro relativo a ts-1) — não deve mudar o sinal de ts-1
     df2 = df.copy()
     df2.iloc[-1, df2.columns.get_loc("close")] *= 10  # salto absurdo na última barra
     prices2 = {"TEST": df2}
-    ts_prev = df.index[-2]
     ctx2 = {"ts": ts_prev, "prices": prices2, "open": []}
     sig2 = strat.signals(ctx2)
-
-    d1 = sig1.get("TEST", ("NONE", 0))[0]
     d2 = sig2.get("TEST", ("NONE", 0))[0]
-    # sig2 é calculado em ts_prev (uma barra antes) — não deve ver o salto da última barra
-    assert d2 is not None, "sinal deveria existir"
+
+    # d2 (calculado com dados futuros alterados) DEVE ser igual a d_orig
+    # Se forem diferentes, há lookahead: o futuro está contaminando o passado
+    assert d2 == d_orig, (
+        f"LOOKAHEAD DETECTADO! Sinal em ts_prev mudou quando o futuro foi alterado: "
+        f"original={d_orig}, com_futuro_modificado={d2}"
+    )
 
 
 if __name__ == "__main__":

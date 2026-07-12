@@ -27,7 +27,7 @@ from . import config as C
 
 try:
     from dotenv import load_dotenv
-    for _p in [r"C:\Users\lucas\.hermes\.env"]:
+    for _p in [str(Path.home() / ".hermes" / ".env")]:
         if os.path.exists(_p):
             load_dotenv(_p, override=False)
 except ImportError:

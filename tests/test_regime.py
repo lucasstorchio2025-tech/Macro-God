@@ -54,7 +54,7 @@ def test_no_regime_returns_normal():
 if __name__ == "__main__":
     test_crisis_on_extreme_vix()
     print("✓ test_crisis_on_extreme_vix passou")
-    test_risk_on_low_vix()
+    test_risk_on_low_vix_without_spy()
     print("✓ test_risk_on_low_vix passou")
     test_always_normal()
     print("✓ test_always_normal passou")

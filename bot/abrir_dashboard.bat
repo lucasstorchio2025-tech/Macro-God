@@ -1,6 +1,6 @@
 @echo off
 title Wealth_Engine_Dashboard
-cd /d C:\Users\lucas\Wealth_Engine
+cd /d %~dp0..
 
 set PYTHON_EXE=C:\Users\lucas\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe
 if not exist "%PYTHON_EXE%" set PYTHON_EXE=python

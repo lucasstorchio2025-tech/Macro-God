@@ -21,12 +21,16 @@ Chaves grátis (2 min cada):
 import json
 import os
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 import requests
+
+# Raiz do projeto (calculada, sem hardcode)
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Carrega variaveis do .env (sem precisar editar o script toda vez que voce colocar uma chave)
 try:
     from dotenv import load_dotenv
-    for env_path in [r"C:\Users\lucas\.hermes\.env"]:
+    for env_path in [str(Path.home() / ".hermes" / ".env")]:
         if os.path.exists(env_path):
             load_dotenv(env_path, override=False)
 except ImportError:
@@ -36,7 +40,7 @@ except ImportError:
 # Estas chaves podem estar no seu .env (recomendado) OU hardcoded aqui.
 FRED_API_KEY = os.environ.get("FRED_API_KEY", "COLOQUE_SUA_CHAVE_FRED")
 FINNHUB_API_KEY = os.environ.get("FINNHUB_API_KEY", "COLOQUE_SUA_CHAVE_FINNHUB")
-OUTPUT_PATH = os.environ.get("WEALTH_OUTPUT_PATH", r"C:\Users\lucas\Wealth_Engine\market_intelligence.json")
+OUTPUT_PATH = os.environ.get("WEALTH_OUTPUT_PATH", str(_PROJECT_ROOT / "market_intelligence.json"))
 SYMBOLS_MT5 = ["EURUSDm", "XAUUSDm", "GBPUSDm", "USDJPYm"]  # Exness Trial11 padrao com sufixo "m" (micro)
 
 # Alertas (opcional) -- crie um bot em 2 min falando com @BotFather no Telegram

@@ -3,7 +3,7 @@ rem WEALTH_ENGINE — Auto Intelligence + Post-Trade Analysis
 rem Roda o pipeline de inteligencia e a analise pos-trade.
 rem Ideal para agendar no Windows Task Scheduler a cada 4h.
 title Wealth_Engine_Intel_Pipeline
-cd /d C:\Users\lucas\Wealth_Engine
+cd /d %~dp0..
 set PYTHON_EXE=C:\Users\lucas\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe
 if not exist "%PYTHON_EXE%" set PYTHON_EXE=python
 
@@ -30,7 +30,7 @@ echo [%date% %time%] --- 3/3: Verificando se o executor esta rodando ---
 tasklist /FI "IMAGENAME eq python.exe" /V 2>nul | findstr /I "executor.py" >nul
 if %ERRORLEVEL% NEQ 0 (
     echo [%date% %time%] [AVISO] Executor NAO esta rodando! Iniciando...
-    start /min "" "C:\Users\lucas\Wealth_Engine\bot\run_executor.bat"
+    start /min "" "%~dp0run_executor.bat"
     echo [%date% %time%] Executor iniciado.
 ) else (
     echo [%date% %time%] Executor esta rodando. OK.

@@ -23,8 +23,8 @@ End If
 
 ' Cria o atalho
 Set Shortcut = WshShell.CreateShortcut(ShortcutPath)
-Shortcut.TargetPath = "C:\Users\lucas\Wealth_Engine\bot\start_all.bat"
-Shortcut.WorkingDirectory = "C:\Users\lucas\Wealth_Engine"
+Shortcut.TargetPath = WshShell.ExpandEnvironmentStrings("USERPROFILE") & "\Wealth_Engine\bot\start_all.bat"
+Shortcut.WorkingDirectory = WshShell.ExpandEnvironmentStrings("USERPROFILE") & "\Wealth_Engine"
 Shortcut.WindowStyle = 7  ' Minimizado
 Shortcut.Description = "Wealth Engine — Sistema Completo (Dashboard + Bot + Intel) - inicia automaticamente"
 Shortcut.Save

@@ -6,8 +6,10 @@ $ErrorActionPreference = "Stop"
 
 $startupPath = [Environment]::GetFolderPath("Startup")
 $shortcutPath = Join-Path $startupPath "Wealth_Engine_System.lnk"
-$targetPath = "C:\Users\lucas\Wealth_Engine\bot\start_all.bat"
-$workingDir  = "C:\Users\lucas\Wealth_Engine"
+# Usa caminho relativo ao diretorio do script (bot/)
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$targetPath = Join-Path $scriptDir "start_all.bat"
+$workingDir  = (Get-Item $scriptDir).Parent.FullName
 
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "  WEALTH ENGINE - Instalar Startup Completa" -ForegroundColor Cyan

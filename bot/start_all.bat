@@ -1,6 +1,6 @@
 @echo off
 title Wealth_Engine_System
-cd /d C:\Users\lucas\Wealth_Engine
+cd /d %~dp0..
 
 set PYTHON_EXE=C:\Users\lucas\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe
 if not exist "%PYTHON_EXE%" set PYTHON_EXE=python
@@ -17,13 +17,13 @@ if %errorlevel%==0 (
     echo  [OK] Dashboard ja esta rodando na porta 8501
 ) else (
     echo  [..] Iniciando Dashboard Mestre...
-    start /min "Wealth_Dashboard" cmd /c "C:\Users\lucas\Wealth_Engine\bot\abrir_dashboard.bat"
+    start /min "Wealth_Dashboard" cmd /c "%~dp0abrir_dashboard.bat"
     echo  [OK] Dashboard inicializando... (http://localhost:8501)
 )
 
 :: ─── 2. Watchdog (monitora o executor) ───
 echo  [..] Iniciando Watchdog...
-start /min "Wealth_Engine_Watchdog_v2" cmd /c "C:\Users\lucas\Wealth_Engine\bot\watchdog_supervisor.bat"
+start /min "Wealth_Engine_Watchdog_v2" cmd /c "%~dp0watchdog_supervisor.bat"
 echo  [OK] Watchdog iniciado (monitora executor 24/7)
 
 :: ─── 3. Intel inicial ───

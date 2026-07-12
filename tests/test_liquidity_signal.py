@@ -1,7 +1,8 @@
 """Testes para o novo LiquidityStressSignal e integracao no regime."""
 
 import sys
-sys.path.insert(0, r"C:\Users\lucas\Wealth_Engine")
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from engine.macro_signals import LiquidityStressSignal
 from engine.regime import RuleBasedRegime

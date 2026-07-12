@@ -17,13 +17,13 @@ import os
 from pathlib import Path
 from datetime import datetime, timezone
 
-PROJECT_ROOT = Path(r"C:\Users\lucas\Wealth_Engine")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # carrega .env
 from dotenv import load_dotenv
 load_dotenv(str(PROJECT_ROOT / ".env"), override=False)
-load_dotenv(r"C:\Users\lucas\.hermes\.env", override=False)
+load_dotenv(str(Path.home() / ".hermes" / ".env"), override=False)
 
 from engine.data import load_all_prices, load_vix, load_spy, gold_equity_corr
 from engine.regime import RuleBasedRegime

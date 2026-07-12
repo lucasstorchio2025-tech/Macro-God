@@ -3,6 +3,7 @@ title Wealth_Engine_Status
 cd /d C:\Users\lucas\Wealth_Engine
 set PYTHON_EXE=C:\Users\lucas\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe
 if not exist "%PYTHON_EXE%" set PYTHON_EXE=python
+if not exist "%PYTHON_EXE%" set PYTHON_EXE=python
 
 echo ============================================
 echo        WEALTH ENGINE - STATUS
@@ -15,7 +16,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from collections import Counter
 
-BOT_DIR = Path(r'C:\Users\lucas\Wealth_Engine\bot')
+BOT_DIR = Path.cwd() / 'bot'   # cwd ja foi setado como raiz do projeto pelo cd /d %~dp0..
 STATE = json.loads((BOT_DIR / 'bot_state.json').read_text(encoding='utf-8')) if (BOT_DIR / 'bot_state.json').exists() else {}
 INTEL = json.loads((BOT_DIR.parent / 'market_intelligence.json').read_text(encoding='utf-8')) if (BOT_DIR.parent / 'market_intelligence.json').exists() else {}
 
@@ -38,7 +39,7 @@ else:
 try:
     import os
     from dotenv import load_dotenv
-    load_dotenv(r'C:\Users\lucas\.hermes\.env', override=False)
+    load_dotenv(str(Path.home() / '.hermes' / '.env'), override=False)
     import MetaTrader5 as mt5
     mt5.initialize(login=int(os.environ['EXNESS_LOGIN']), password=os.environ['EXNESS_PASSWORD'], server=os.environ['EXNESS_SERVER'], timeout=15000)
     acc = mt5.account_info()

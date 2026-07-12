@@ -35,7 +35,7 @@ import streamlit as st
 import pandas as pd
 
 # ── Paths ──
-PROJECT_ROOT = Path(r"C:\Users\lucas\Wealth_Engine")
+PROJECT_ROOT = Path(__file__).resolve().parent
 BOT_DIR = PROJECT_ROOT / "bot"
 STATE_PATH = BOT_DIR / "bot_state.json"
 DECISION_LOG_PATH = BOT_DIR / "decision_log.jsonl"

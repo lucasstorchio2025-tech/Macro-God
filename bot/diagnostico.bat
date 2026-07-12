@@ -1,6 +1,6 @@
 @echo off
 title Wealth_Engine_Diagnostico
-cd /d C:\Users\lucas\Wealth_Engine
+cd /d %~dp0..
 echo ============================================
 echo   WEALTH ENGINE - DIAGNOSTICO RAPIDO
 echo   %date% %time%
