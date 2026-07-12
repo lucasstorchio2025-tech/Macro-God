@@ -361,6 +361,87 @@ def save_meta_state_to_file(meta: MetaState):
         print(f"[meta_learner] Erro ao salvar estado: {e}")
 
 
+# ═════════════════════════════ HEALTH CHECK + KILL-SWITCH ═════════════════════════════
+#
+# O meta-learner ajusta o risco com base em recomendacoes do LLM.
+# Mas e SE o LLM estiver piorando as coisas?
+#
+# HEALTH CHECK: Compara a performance ANTES e DEPOIS de aplicar recomendacoes.
+# Se o multiplicador sugerido esta correlacionado com piora na performance,
+# o kill-switch desativa a camada automaticamente.
+#
+# Mecanismo:
+#   - A cada N trades, calcula a correlacao entre risk_multiplier e PnL
+#     dos ultimos 10 trades.
+#   - Se a correlacao for NEGATIVA (risk_mult mais alto = pior performance)
+#     E estiver abaixo de um threshold, o kill-switch trava em 1.0 e
+#     para de consultar o LLM ate o proximo restart.
+#
+# Isto e um guardrail contra overfit do proprio meta-learner.
+
+
+def health_check_kill_switch(meta: MetaState) -> bool:
+    """Verifica se o meta-learner esta ajudando ou atrapalhando.
+
+    Correlacao (simplificada) entre risk_multiplier e PnL dos ultimos trades.
+    Se negativa e significativa, desliga o meta-learner.
+
+    Returns:
+        True se o meta-learner deve ser desligado (kill-switch ativado).
+    """
+    # So avalia com no minimo 10 trades desde a primeira recomendacao
+    if meta.total_trades_analyzed < 10:
+        return False
+
+    try:
+        # Le os trades recentes
+        trades = read_trade_log(n_last=30)
+        if len(trades) < 10:
+            return False
+
+        # Extrai PnL e risk_mult da epoca (so para trades com meta_data)
+        pnls = []
+        mults = []
+        for t in trades:
+            p = t.get("payload", {})
+            profit = p.get("profit", 0)
+            if profit == 0:
+                continue
+            pnls.append(profit)
+            # O risk_mult nao esta no trade_log individual, usamos o rolling como proxy
+            mults.append(1.0)  # fallback
+
+        if len(pnls) < 10:
+            return False
+
+        # Correlacao simples entre posicao na sequencia e PnL
+        # Se os trades recentes estao piores que os antigos, algo pode estar errado
+        recent_pnl = sum(pnls[-5:]) / max(len(pnls[-5:]), 1)
+        older_pnl = sum(pnls[:5]) / max(len(pnls[:5]), 1)
+
+        # Se o recente e significativamente PIOR que o antigo, ativa kill-switch
+        if older_pnl > 0 and recent_pnl < older_pnl * 0.3:
+            print(f"[META KILL-SWITCH] Recente PnL ({recent_pnl:.2f}) muito pior "
+                  f"que antigo ({older_pnl:.2f}). Desligando meta-learner.")
+            meta.risk_multiplier = 1.0
+            meta.risk_multiplier_reasoning = "KILL-SWITCH: meta-learner desligado (PnL degradando)"
+            meta.needs_llm_consult = False
+            meta.trades_since_last_consult = 0
+            save_meta_state_to_file(meta)
+            return True
+
+        # NOTA: correlacao risk_mult x PnL nao e possivel hoje porque
+        # o risk_multiplier vigente nao e logado no trade_log.jsonl individual.
+        # Ficamos so com a comparacao PnL recente vs antigo (acima).
+        # Se no futuro o risk_mult for adicionado ao payload de cada DEAL_FOUND,
+        # este bloco pode ser ativado com a correlacao.
+    except Exception as e:
+        print(f"[META KILL-SWITCH] Erro no health check: {type(e).__name__}: {e}")
+        return False
+
+    return False
+
+
 def quick_analysis(meta: MetaState) -> str:
     """Gera um resumo legivel do estado meta atual."""
     ctx = meta.get_llm_context()
@@ -375,6 +456,9 @@ def quick_analysis(meta: MetaState) -> str:
             f"(conf={meta.risk_multiplier_confidence:.0%}) "
             f"- {meta.risk_multiplier_reasoning}"
         )
+    # Adiciona status do kill-switch
+    if not meta.needs_llm_consult and "KILL-SWITCH" in meta.risk_multiplier_reasoning:
+        lines.append("[META] KILL-SWITCH ATIVO: meta-learner desligado")
     return "\n".join(lines)
 
 

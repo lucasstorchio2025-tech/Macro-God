@@ -96,19 +96,53 @@ def _get_regime():
     return _REGIME
 
 
+def _staleness_check(rates, sym: str, max_hours: int = 6) -> bool:
+    """Verifica se o dado baixado do MT5 é recente o suficiente pra confiar.
+
+    Retorna False (dado RUIM) se:
+      - rates vazio/None
+      - Última barra tem mais de max_hours de idade
+      - Preço de fechamento é zero, negativo ou NaN
+    """
+    if rates is None or len(rates) == 0:
+        print(f"  [DATA QUALITY] {sym}: sem dados (rates=None/vazio)")
+        return False
+    last = rates[-1]
+    close = last.get("close", 0.0)
+    if close <= 0 or not np.isfinite(close):
+        print(f"  [DATA QUALITY] {sym}: preço inválido ({close})")
+        return False
+    # Checa idade da última barra
+    try:
+        bar_time = pd.Timestamp(last["time"], unit="s", tz="UTC")
+        age_hours = (pd.Timestamp.utcnow() - bar_time).total_seconds() / 3600
+        if age_hours > max_hours:
+            print(f"  [DATA QUALITY] {sym}: dado velho ({age_hours:.1f}h > {max_hours}h)")
+            return False
+    except Exception:
+        pass  # Se não consegue checar idade, assume OK (falsos positivos são piores)
+    return True
+
+
 def fetch_recent_prices(mt5, bars: int = C.MOMENTUM_LOOKBACK_BARS + 50) -> dict[str, pd.DataFrame]:
     """Puxa histórico H4 recente de TODOS os símbolos para alimentar a estratégia.
 
     Reusa _mt5_to_df do data.py pra manter formato consistente com o backtest.
+    Inclui verificação de qualidade de dado (staleness + validade).
     """
     out = {}
     for sym in C.SYMBOLS:
         if not mt5.symbol_select(sym, True):
             continue
         rates = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_H4, 0, bars)
-        if rates is None or len(rates) == 0:
+        # ── Data quality check: dado velho ou inválido → pula este símbolo ──
+        if not _staleness_check(rates, sym):
             continue
-        out[sym] = _mt5_to_df(rates)
+        df = _mt5_to_df(rates)
+        if df is None or len(df) < C.MOMENTUM_LOOKBACK_BARS:
+            print(f"  [DATA QUALITY] {sym}: apenas {len(df) if df is not None else 0} barras (min {C.MOMENTUM_LOOKBACK_BARS})")
+            continue
+        out[sym] = df
     return out
 
 

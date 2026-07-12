@@ -305,6 +305,47 @@ def main():
             print(f"\n   ==> {len(changes_made)} alteracoes aplicadas: {', '.join(changes_made)}")
             result["config_updated"] = True
             result["changes_applied"] = changes_made
+
+            # ── VALIDAÇÃO PÓS-APLICATIVO: reimporta config + roda testes ──
+            print("\n   [VALIDACAO] Reimportando config.py para verificar integridade...")
+            try:
+                import importlib
+                import engine.config as C
+                importlib.reload(C)
+                # Verifica se as constantes ainda existem
+                _ = C.RISK_OVERRIDE_PCT
+                _ = C.DAILY_DD_PCT
+                _ = C.TOTAL_RISK_CAP_PCT
+                print(f"   [OK] config.py reimportado sem erros.")
+                result["post_apply_import_ok"] = True
+
+                # Roda os testes principais pra garantir que nada quebrou
+                print(f"\n   [VALIDACAO] Rodando testes (run_tests.py)...")
+                import subprocess
+                test_result = subprocess.run(
+                    [sys.executable, "tests/run_tests.py"],
+                    capture_output=True, text=True, timeout=120,
+                )
+                if test_result.returncode == 0:
+                    print(f"   [OK] Todos os testes passaram.")
+                    result["post_apply_tests_ok"] = True
+                else:
+                    print(f"   [AVISO] Testes falharam! stdout/sdterr nos ultimos 500 chars:")
+                    print(f"   {test_result.stdout[-500:]}")
+                    print(f"   {test_result.stderr[-500:]}")
+                    result["post_apply_tests_ok"] = False
+                    result["post_apply_test_output"] = test_result.stdout[-500:] + test_result.stderr[-500:]
+
+            except Exception as e:
+                print(f"   [ERRO] config.py corrompido apos patch: {e}")
+                print(f"   REVERTENDO alteracoes...")
+                # Reverte: reload do arquivo original do git
+                import subprocess as sp
+                sp.run(["git", "checkout", "--", str(CONFIG_PATH)], capture_output=True)
+                print(f"   [REVERTIDO] config.py voltou ao estado anterior ao --apply.")
+                result["post_apply_import_ok"] = False
+                result["config_updated"] = False
+                result["reverted"] = True
         else:
             print("\n   Nenhuma alteracao aplicada.")
             result["config_updated"] = False

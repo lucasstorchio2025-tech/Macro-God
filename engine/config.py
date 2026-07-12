@@ -84,6 +84,17 @@ SLIPPAGE_POINTS: dict[str, int] = {
     "XAUUSDm": 50,    # ouro é mais grosso
 }
 
+# CUSTO DE SWAP (rollover overnight) em USD por lote padrão (1.0) por dia.
+# Ouro (XAUUSD) geralmente paga swap quando comprado (negativo) e
+# recebe swap quando vendido (positivo). Valores típicos para conta micro:
+#   Long:  -3.0 USD/lote/dia (paga)
+#   Short: +1.5 USD/lote/dia (recebe)
+# Aplicado no backtest para posições mantidas após as 17:00 ET (rollover).
+# Referência: https://www.exness.com/marketinfo/contract-specifications/
+SWAP_LONG_USD_PER_LOT: dict[str, float] = {"XAUUSDm": -3.0}
+SWAP_SHORT_USD_PER_LOT: dict[str, float] = {"XAUUSDm": 1.5}
+SWAP_TRIPLE_ON_WEDNESDAY: bool = True   # quarta-feira = 3x swap (rollover de sexta)
+
 
 # ───────────────────────── ESTOP / ATR ─────────────────────────
 ATR_PERIOD        = 14           # mesmo do market_intelligence.py original
@@ -327,6 +338,7 @@ __all__ = [
     "ACCOUNT_START_USD", "RISK_PER_TRADE_PCT", "MAX_OPEN_POSITIONS",
     "RISK_OVERRIDE_PCT", "MIN_REWARD_RISK", "DAILY_DD_PCT", "WEEKLY_DD_PCT",
     "TOTAL_RISK_CAP_PCT", "SPREAD_POINTS", "SLIPPAGE_POINTS",
+    "SWAP_LONG_USD_PER_LOT", "SWAP_SHORT_USD_PER_LOT", "SWAP_TRIPLE_ON_WEDNESDAY",
     "RISK_PCT_BY_REGIME",
     "D1_MOMENTUM_LOOKBACK_BARS", "D1_FILTER_ENABLED",
     "ATR_PERIOD", "ATR_STOP_MULT", "RR_TARGET_MULT",
@@ -348,6 +360,7 @@ __all__ = [
     "ATR_STOP_MULT_BY_REGIME",
     "SESSION_FILTER_ALLOW",
     "EVENT_REDUCTION_ENABLED", "EVENT_REDUCTION_HOURS_BEFORE", "EVENT_REDUCTION_SCALE",
+    "MAX_LOSS_STREAK", "LOSS_STREAK_COOLDOWN_BARS",
     "EVENT_VOLATILITY_HOURS_AFTER", "EVENT_VOLATILITY_SL_MULT", "EVENT_MIN_IMPORTANCE",
     "WF_TRAIN_BARS", "WF_TEST_BARS", "WF_STEP_BARS",
     "EXNESS_MAGIC", "COMMENT_TAG", "RunConfig",

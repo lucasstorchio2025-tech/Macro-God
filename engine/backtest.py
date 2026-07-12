@@ -144,6 +144,7 @@ def run_backtest(
         digits[s] = d if d else 5
 
     balance = account_start
+    total_swap_cost = 0.0              # acumulador de swap (corrige: swap não era contabilizado)
     equity_pts = []
     exposure_pts = []
     regime_pts = []
@@ -154,6 +155,24 @@ def run_backtest(
     loss_streak_start_bar: int = 0    # barra índice onde a streak começou
     # Macro events: módulo lazy-import (só carrega se EVENT_REDUCTION_ENABLED)
     _macro_event_fns = None  # (events_near, get_events) cache
+
+    # helper: verifica se a barra atual é rollover (17:00 ET ≈ 21:00 UTC)
+    def _is_rollover_bar(ts: pd.Timestamp) -> bool:
+        """True se esta barra H4 cruza o horário de rollover (21:00 UTC / 17:00 ET)."""
+        # Barra H4: timestamps em 0,4,8,12,16,20 UTC.
+        # Rollover acontece às 21:00 UTC. A barra que contém 21:00 é a das 20:00 UTC,
+        # que vai de 20:00 a 23:59 UTC. Sexta-feira o swap é 3x (rola para segunda).
+        h = ts.hour
+        return h == 20  # barra das 20:00 UTC (cruza rollover 21:00)
+
+    def _swap_cost(pos) -> float:
+        """Custo de swap para esta posição na barra atual.
+        Retorna custo negativo para long, positivo para short (como na vida real).
+        """
+        if pos.direction == "BUY":
+            return C.SWAP_LONG_USD_PER_LOT.get(pos.symbol, 0.0) * pos.size_frac
+        else:
+            return C.SWAP_SHORT_USD_PER_LOT.get(pos.symbol, 0.0) * pos.size_frac
 
     # helper: contexto passado à estratégia (snapshot imutável do "passado")
     def ctx_at(t_idx: int) -> dict:
@@ -185,7 +204,14 @@ def run_backtest(
     for i in range(1, len(common_idx)):
         ts = common_idx[i]
 
-        # ── 1. Atualiza P&L das posições abertas com o high/low DESSA barra ──
+        # ── 1. Custo de swap (rollover) — aplicado na barra que contém 17:00 ET ──
+        if _is_rollover_bar(ts):
+            swap_mult = 3.0 if C.SWAP_TRIPLE_ON_WEDNESDAY and ts.weekday() == 2 else 1.0
+            for pos in open_positions:
+                swap = _swap_cost(pos) * swap_mult
+                total_swap_cost += swap  # acumula separadamente (NÃO mexe no balance ainda)
+
+        # ── 2. Atualiza P&L das posições abertas com o high/low DESSA barra ──
         # Checks por posição (na ordem: breakeven → trailing stop → partial TP → SL/TP → holding time):
         still_open = []
         for pos in open_positions:
@@ -284,7 +310,7 @@ def run_backtest(
                 still_open.append(pos)
         open_positions = still_open
 
-        # ── 2. Regime agora (gate de exposição / saída por mudança de regime) ──
+        # ── 3. Regime agora (gate de exposição / saída por mudança de regime) ──
         regime = regime_provider.at(ts, ctx_at(i)) if regime_provider else "normal"
         regime_pts.append((ts, regime))
         # Crisis: fecha tudo
@@ -302,7 +328,7 @@ def run_backtest(
                              last_exit=last_exit, bar_idx=i)
             open_positions = []
 
-        # ── 2b. Atualiza loss streak baseado nos trades que fecharam NESTA barra ──
+        # ── 3b. Atualiza loss streak baseado nos trades que fecharam NESTA barra ──
         # Verifica os trades fechados nesta iteração (os que têm exit_time == ts)
         new_closes = [t for t in closed_trades if t.exit_time == ts]
         for t in new_closes:
@@ -316,10 +342,10 @@ def run_backtest(
         elif loss_streak >= C.MAX_LOSS_STREAK and loss_streak_start_bar == 0:
             loss_streak_start_bar = i
 
-        # ── 3. Recálculo do saldo = saldo_inicial + soma pnl_usd de todos fechados ──
-        balance = account_start + sum(t.pnl_usd for t in closed_trades)
+        # ── 4. Recálculo do saldo = saldo_inicial + soma pnl_usd de todos fechados + swap ──
+        balance = account_start + sum(t.pnl_usd for t in closed_trades) + total_swap_cost
 
-        # ── 4. Novas entradas (se há slot e regime permite) ──
+        # ── 5. Novas entradas (se há slot e regime permite) ──
         base_scale = C.EXPOSURE_SCALE.get(regime, 0.5)
         scale = base_scale
         slots = max_positions - len(open_positions)

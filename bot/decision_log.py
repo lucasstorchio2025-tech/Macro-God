@@ -38,6 +38,8 @@ def build_decision_context(intel: dict, news_data: Optional[dict],
     """Monta o snapshot completo do mercado e do bot no momento da decisão.
 
     Chamado uma vez por ciclo, antes de avaliar símbolos individuais.
+    Inclui snapshot dos parâmetros de risco ATIVOS — pra reconstruir
+    "essa trade foi tomada sob qual config" meses depois.
     """
     now = datetime.now(timezone.utc)
     
@@ -81,6 +83,22 @@ def build_decision_context(intel: dict, news_data: Optional[dict],
     dd_dia = ((balance - base_dia) / base_dia * 100) if base_dia and base_dia > 0 else 0
     dd_sem = ((balance - base_sem) / base_sem * 100) if base_sem and base_sem > 0 else 0
 
+    # ── Snapshot dos parâmetros de risco ATIVOS ──
+    try:
+        from engine import config as C
+        risk_snapshot = {
+            "risk_override_pct": dict(C.RISK_OVERRIDE_PCT),
+            "risk_per_trade_pct": C.RISK_PER_TRADE_PCT,
+            "total_risk_cap_pct": C.TOTAL_RISK_CAP_PCT,
+            "daily_dd_pct": C.DAILY_DD_PCT,
+            "weekly_dd_pct": C.WEEKLY_DD_PCT,
+            "max_open_positions": C.MAX_OPEN_POSITIONS,
+            "min_reward_risk": C.MIN_REWARD_RISK,
+            "cooldown_bars": C.COOLDOWN_BARS,
+        }
+    except Exception:
+        risk_snapshot = {}
+
     return {
         "ts_utc": now.isoformat(),
         "balance": round(balance, 2),
@@ -101,6 +119,7 @@ def build_decision_context(intel: dict, news_data: Optional[dict],
         "dd_daily_pct": round(dd_dia, 2),
         "dd_weekly_pct": round(dd_sem, 2),
         "open_positions_count": state.get("trades_opened_total", 0),
+        "risk_config_snapshot": risk_snapshot,  # NOVO: parâmetros ativos no momento da decisão
     }
 
 
