@@ -103,12 +103,15 @@ def _staleness_check(rates, sym: str, max_hours: int = 6) -> bool:
       - rates vazio/None
       - Última barra tem mais de max_hours de idade
       - Preço de fechamento é zero, negativo ou NaN
+
+    NOTA: mt5.copy_rates_from_pos() retorna numpy structured array onde
+    cada elemento é numpy.void (NÃO dict). Acesso via colchetes [] não .get().
     """
     if rates is None or len(rates) == 0:
         print(f"  [DATA QUALITY] {sym}: sem dados (rates=None/vazio)")
         return False
     last = rates[-1]
-    close = last.get("close", 0.0)
+    close = float(last["close"]) if "close" in last.dtype.names else 0.0
     if close <= 0 or not np.isfinite(close):
         print(f"  [DATA QUALITY] {sym}: preço inválido ({close})")
         return False
