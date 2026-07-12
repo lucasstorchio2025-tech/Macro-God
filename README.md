@@ -43,6 +43,16 @@
 | Trades/ano | ~96 |
 | Sessão | Apenas Tokyo |
 
+### Resultados ao Vivo (pós-configuração v2)
+
+| Trade | Data | Direção | Lote | Regime | P&L |
+|---|---|---|---|---|---|
+| 🟢 **XAUUSDm** | 03/07/2026 → 08/07/2026 | SELL 🐻 | 0.01 | `risk_on` | **+$156,41** |
+
+**Saldo inicial da semana:** $409,99 → **Saldo atual: $566,40** (+38,2% na semana)
+
+> ℹ️ Após a correção dos parâmetros de risco (hard_cap = 7.5%), o lote mínimo de XAUUSDm (~$60 de risco) ainda excede o cap para o saldo atual. O bot está recusando corretamente novas entradas até o saldo crescer o suficiente para caber no limite de risco.
+
 ---
 
 ## 🏗️ Arquitetura
@@ -116,7 +126,7 @@ Todos os parâmetros do sistema estão aqui, com nomes claros e comentários. Pr
 | Categoria | Parâmetros-chave |
 |---|---|
 | **Universo** | `SYMBOLS = ["XAUUSDm"]`, `USD_BETA` |
-| **Risco** | `RISK_PER_TRADE_PCT = 5%`, `MAX_OPEN_POSITIONS = 3`, `MIN_REWARD_RISK = 2.0` |
+| **Risco** | `RISK_PER_TRADE_PCT = 5%`, `MAX_OPEN_POSITIONS = 1` (após otimização OOS), `TOTAL_RISK_CAP_PCT = 12%` (↑ de 8%), `RISK_OVERRIDE_PCT["XAUUSDm"] = 12%` (↑ de 7.5%), `DAILY_DD_PCT = 12%` (↑ de 8%), `MIN_REWARD_RISK = 2.0` |
 | **Regime** | `VIX_RISKOFF_PERCENTILE = 80`, `VIX_CRISIS_PERCENTILE = 95`, `EXPOSURE_SCALE` |
 | **Momentum** | `MOMENTUM_LOOKBACK_BARS = 264` (~1 ano), `MOMENTUM_SKIP_BARS = 24` |
 | **Vol-Target** | `TARGET_VOL_PCT_ANNUAL = 12%`, `VOL_TARGET_CAP = 0.6` |

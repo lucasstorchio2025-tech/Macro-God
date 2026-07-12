@@ -50,7 +50,7 @@ def sync_trades_from_mt5() -> int:
         import MetaTrader5 as mt5
 
         from dotenv import load_dotenv
-        load_dotenv(r"C:\Users\lucas\.hermes\.env", override=False)
+        load_dotenv(str(Path.home() / ".hermes" / ".env"), override=False)
         load_dotenv(str(PROJECT_ROOT / ".env"), override=False)
 
         login = os.environ.get("EXNESS_LOGIN")

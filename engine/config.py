@@ -51,21 +51,29 @@ MAX_OPEN_POSITIONS  = 1          # XAUUSD — máximo 1 posição (apenas 1 sím
 # NOTA: Antes era 3 quando o universo tinha 4 pares (EURUSDm, GBPUSDm, USDJPYm, XAUUSDm).
 # Com SYMBOLS=["XAUUSDm"] e anti-empilhamento ativo, 3 posições simultâneas é impossível.
 # Mantido com valor 1 para clareza — se expandir para múltiplos símbolos no futuro, aumentar.
-# XAUUSDm: lote mínimo 0.01 = ~14.68% risco com $410 de saldo (varia com ATR).
-# IMPORTANTE: Override NÃO pode exceder WEEKLY_DD_PCT (15%) nem DAILY_DD_PCT (8%) —
-# senão um único trade estoura os circuit breakers e o sistema para o dia/semana.
-# Com conta atual ~$410, lote 0.01 de XAUUSDm = ~14.68% risco → trades serão
-# REJEITADOS até a conta crescer ou aumentar o capital. Isto é INTENCIONAL:
-# operar com risco que estoura o DD diário/semanal invalida a proteção.
-RISK_OVERRIDE_PCT: dict[str, float] = {"XAUUSDm": 7.5}
+# XAUUSDm: lote mínimo 0.01 = ~10.6% risco com $566 de saldo (varia com ATR).
+RISK_OVERRIDE_PCT: dict[str, float] = {"XAUUSDm": 12.0}
 MIN_REWARD_RISK     = 2.0        # RR mínimo
-DAILY_DD_PCT        = 8.0        # pausa o dia
+DAILY_DD_PCT        = 12.0       # pausa o dia (aumentado de 8% para liberar XAUUSDm)
 WEEKLY_DD_PCT       = 15.0       # pausa a semana
-TOTAL_RISK_CAP_PCT  = 8.0       # exposição aberta somada <= 8%. Alinhado com DAILY_DD_PCT.
-# NOTA: Antes era 18% (alinhado com RISK_OVERRIDE_PCT), mas isso permitia
-# que um único trade consumisse TODO o orçamento de drawdown diário e semanal.
-# Agora TOTAL_RISK_CAP_PCT = DAILY_DD_PCT = 8% — qualquer trade que exceda
-# esse limite é REJEITADO independente do override do símbolo.
+TOTAL_RISK_CAP_PCT  = 12.0       # exposição aberta somada <= 12%. (aumentado junto com DAILY_DD_PCT)
+# NOTA: O usuário optou por aumentar os limites de risco para que XAUUSDm
+# possa operar com o saldo atual (~$566). O lote mínimo 0.01 de XAUUSDm
+# consome ~10.6% do saldo — acima do antigo cap de 7.5% / 8%.
+#
+# NOVA CONTA:
+#   RISK_OVERRIDE_PCT["XAUUSDm"] = 12%  → override individual
+#   DAILY_DD_PCT                 = 12%  → hard_cap efetivo = min(12%, 12%) = 12%
+#   risco_real 0.01 lot XAUUSDm  ≈ 10.6%  → 10.6% < 12% ✅ trade passa
+#   WEEKLY_DD_PCT                = 15%  → proteção semanal ainda ativa
+#
+# Se o trade perder (~$60), saldo cai pra ~$506:
+#   risco 0.01 lot em $506 ≈ 11.9% — ainda dentro do cap de 12% (por pouco)
+# Se o trade ganhar (+$156), saldo sobe pra ~$722:
+#   risco 0.01 lot em $722 ≈ 8.3% — folga confortável
+#
+# Isto foi uma DECISÃO ATIVA do usuário (não é o padrão recomendado).
+# Assim que o saldo atingir ~$800+, pode-se reduzir de volta pra 8%.
 
 # Custos de transação honestos. Sem isto, qualquer backtest mente.
 # Spread em PONTOS (mesma unidade de symbol_info.spread). Slippage conservador.

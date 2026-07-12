@@ -476,12 +476,17 @@ if snap and "drivers" in snap:
                 )
 
                 # Expandable details
-                if driver == "USD" and detail.get("dxy"):
-                    st.caption(f"DXY: {detail['dxy']:.2f} ({detail.get('dxy_pct', 0):+.2f}%)")
-                elif driver == "RISK" and detail.get("vix"):
-                    st.caption(f"VIX: {detail['vix']:.1f} ({detail.get('vix_pct', 0):+.1f}%)")
-                elif driver == "YIELDS" and detail.get("treasury_10y"):
-                    st.caption(f"Treasury 10y: {detail['treasury_10y']:.2f}%")
+                if driver == "USD" and detail.get("dxy") is not None:
+                    dxy_val = detail["dxy"] or 0
+                    dxy_pct = detail.get("dxy_pct") or 0
+                    st.caption(f"DXY: {dxy_val:.2f} ({dxy_pct:+.2f}%)")
+                elif driver == "RISK" and detail.get("vix") is not None:
+                    vix_val = detail["vix"] or 0
+                    vix_pct = detail.get("vix_pct") or 0
+                    st.caption(f"VIX: {vix_val:.1f} ({vix_pct:+.1f}%)")
+                elif driver == "YIELDS" and detail.get("treasury_10y") is not None:
+                    ty_val = detail["treasury_10y"] or 0
+                    st.caption(f"Treasury 10y: {ty_val:.2f}%")
                 elif driver == "NEWS" and detail.get("top"):
                     for n in detail["top"][:3]:
                         st.caption(f"{impact_emoji(n.get('impact',''))} {n.get('headline','?')[:60]}")
@@ -691,8 +696,8 @@ if recent_decisions:
     df_display = df[display_cols]
 
     st.dataframe(
-        df_display.style.applymap(color_result, subset=["Resultado"]),
-        use_container_width=True,
+        df_display.style.map(color_result, subset=["Resultado"]),
+        width='stretch',
         hide_index=True,
         height=min(50 * 25, 600),
     )
@@ -789,7 +794,10 @@ if trade_events:
 
     if trade_rows:
         df_trades = pd.DataFrame(trade_rows)
-        st.dataframe(df_trades, use_container_width=True, hide_index=True,
+        # Fix ArrowTypeError: ensure mixed-type column 'Lote' is string
+        if "Lote" in df_trades.columns:
+            df_trades["Lote"] = df_trades["Lote"].astype(str)
+        st.dataframe(df_trades, width='stretch', hide_index=True,
                      height=min(50 * 25, 500))
     else:
         st.info("Nenhum evento de trade encontrado.")

@@ -1,8 +1,7 @@
 @echo off
 title Wealth_Engine_Status
-cd /d C:\Users\lucas\Wealth_Engine
+cd /d %~dp0..
 set PYTHON_EXE=C:\Users\lucas\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe
-if not exist "%PYTHON_EXE%" set PYTHON_EXE=python
 if not exist "%PYTHON_EXE%" set PYTHON_EXE=python
 
 echo ============================================
@@ -16,7 +15,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from collections import Counter
 
-BOT_DIR = Path.cwd() / 'bot'   # cwd ja foi setado como raiz do projeto pelo cd /d %~dp0..
+BOT_DIR = Path.cwd() / 'bot'   # cwd foi setado como raiz pelo 'cd /d %~dp0..' na linha 3
 STATE = json.loads((BOT_DIR / 'bot_state.json').read_text(encoding='utf-8')) if (BOT_DIR / 'bot_state.json').exists() else {}
 INTEL = json.loads((BOT_DIR.parent / 'market_intelligence.json').read_text(encoding='utf-8')) if (BOT_DIR.parent / 'market_intelligence.json').exists() else {}
 
@@ -46,7 +45,7 @@ try:
     if acc:
         print(f'  💰 Saldo: ${acc.balance:.2f}  Equity: ${acc.equity:.2f}  Lucro: ${acc.profit:+.2f}')
     positions = mt5.positions_get(magic=999888777) or []
-    print(f'  📦 Posicoes abertas: {len(positions)}/3')
+    print(f'  📦 Posicoes abertas: {len(positions)}/1 (MAX_OPEN_POSITIONS=1)')
     for p in positions:
         d = 'BUY' if p.type==0 else 'SELL'
         print(f'      ticket={p.ticket} {p.symbol} {d} {p.volume} lot @ {p.price_open:.5f} | profit ${p.profit:+.2f}')
@@ -143,7 +142,8 @@ if log_path.exists():
             last_ts = lines[-1].get('ts_utc', '')
             if last_ts:
                 try:
-                    dt = datetime.fromisoformat(last_ts.replace('Z', '+00:00'))                print(f'  Ultima decisao: {_ago(dt)}')
+                    dt = datetime.fromisoformat(last_ts.replace('Z', '+00:00'))
+                    print(f'  Ultima decisao: {_ago(dt)}')
             except:
                 print(f'  Ultima decisao: {last_ts[:19]}')
     except Exception as e:
