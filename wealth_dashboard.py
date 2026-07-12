@@ -172,11 +172,14 @@ def arrow_for(dir_: str) -> str:
 
 def get_current_session() -> str:
     h = datetime.now(timezone.utc).hour
-    if 0 <= h < 4:  return "Sydney"
-    elif 4 <= h < 8: return "Tokyo"
-    elif 7 <= h < 16: return "London"
-    elif 13 <= h < 22: return "NewYork"
-    return "Off"
+    if 21 <= h < 24:
+        return "Sydney"     # Sydney abre ~22:00 UTC (AEST, sem DST)
+    elif 0 <= h < 7:
+        return "Tokyo"      # Tokyo 00:00-06:00 UTC + overlap Sydney
+    elif 7 <= h < 13:
+        return "London"     # Europa (BST=UTC+1: 07:00-16:00)
+    else:  # 13 <= h < 21
+        return "NewYork"    # EUA (EDT=UTC-4: 12:00-21:00)
 
 
 # ═══════════════════════════ CARREGAR DADOS ═══════════════════════════
