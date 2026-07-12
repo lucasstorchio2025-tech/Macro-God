@@ -196,4 +196,4 @@
 ![Análise](analysis_charts.png)
 
 ---
-_Gerado em 2026-07-12 17:02 UTC por full_analysis.py_
+_Gerado em 2026-07-12 17:16 UTC por full_analysis.py_

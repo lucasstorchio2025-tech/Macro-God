@@ -166,8 +166,10 @@ VOL_TARGET_CAP        = 0.6      # cap conservador do vol-scalar. Sweep mostrou 
 # ───────────────────────── COOLDOWN ─────────────────────────
 # Após fechar uma posição num símbolo, espera N barras antes de reentrar.
 # Sem isso, o ts-momentum reabre toda barra após SL/TP → 5000+ trades → overtrading.
-COOLDOWN_BARS = 2               # ~8h em H4 (2 × 4h = 8h). Reduzido de 12 (48h) para dry-run.
-                                     # 6h nao e exato em H4 (1 bar=4h), 2 barras=8h e o mais proximo.
+COOLDOWN_BARS = 12              # ~48h em H4 (12 × 4h = 48h). CRITICO: COOLDOWN<12 DESTROI o sistema.
+                                     # Testado COOLDOWN=2 (8h): Sharpe caiu de 1.19 para 0.24.
+                                     # O cooldown longo evita reentrada apos stop-loss, que e o
+                                     # principal destruidor de edge em trend-following.
 
 
 # ───────────────────────── FILTRO POR SESSÃO ─────────────────────────
