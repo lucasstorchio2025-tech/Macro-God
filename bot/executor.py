@@ -60,7 +60,7 @@ import requests
 from engine import config as C
 from engine.utils import session_of
 from engine.meta_config import MetaState, load_meta_state, save_meta_state
-from engine.meta_learner import consult_llm, quick_analysis
+from engine.meta_learner import consult_llm, quick_analysis, health_check_kill_switch
 
 # ============== PATHS ==============
 BOT_DIR = Path(__file__).resolve().parent
@@ -645,7 +645,7 @@ def run_once(state: dict) -> dict:
 
     # DECISÃO: se há slot, pede sinais ao engine (via strategy_bridge)
     # Usamos compute_signals_with_detail pra ter o contexto completo
-    from bot.strategy_bridge import compute_signals_with_detail
+    from bot.strategy_bridge import compute_signals_with_detail, get_current_regime
     if qtd_open < MAX_OPEN_POSITIONS:
         try:
             sigs, signal_details, regime_now = compute_signals_with_detail(mt5)
@@ -877,6 +877,16 @@ def run_once(state: dict) -> dict:
                 summary["meta_llm_consulted"] = True
     except Exception as e:
         print(f"  [META] Erro ao consultar LLM: {type(e).__name__}: {e}")
+
+    # HEALTH CHECK: kill-switch do meta-learner
+    try:
+        if health_check_kill_switch(meta):
+            print(f"  [META] KILL-SWITCH ATIVADO — meta-learner desligado")
+            meta_rm = 1.0
+            summary["risk_multiplier"] = 1.0
+            summary["meta_kill_switch"] = True
+    except Exception as e:
+        print(f"  [META] Erro no health check: {type(e).__name__}: {e}")
 
     # Mostra estado meta resumido
     try:

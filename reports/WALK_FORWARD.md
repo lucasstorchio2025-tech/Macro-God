@@ -1,5 +1,5 @@
 # WALK-FORWARD VALIDATION
-**Gerado em:** 2026-07-06 14:30 UTC
+**Gerado em:** 2026-07-12 15:39 UTC
 
 ## Objetivo
 Validar que os parametros otimizados do LiquidityStressSignal 
@@ -7,8 +7,8 @@ Validar que os parametros otimizados do LiquidityStressSignal
 testando seu desempenho fora-da-amostra (OOS) em janelas sequenciais.
 
 ## Periodo Analisado
-- Barras H4 disponiveis: 7488
-- Periodo completo: 2021-10-27 -> 2026-07-06
+- Barras H4 disponiveis: 7515
+- Periodo completo: 2021-10-27 -> 2026-07-10
 - Janelas walk-forward: 8
 
 ## Validacao 1: Parametros Fixos em OOS
@@ -31,15 +31,15 @@ comparando desempenho IS (treino) vs OOS (teste).
 | 8 |  |  |  |  |  |  |  |  |  |
 
 ### Estatisticas Agregadas
-- **Sharpe IS medio:** 0.39
-- **Sharpe OOS medio:** 0.90
-- **Decaimento medio:** +0.51
-- **Janelas com OOS Sharpe > 0.8:** 4/8
-- **Janelas com OOS Sharpe > 0.6:** 4/8
-- **Menor Sharpe OOS:** -0.83
-- **Maior Sharpe OOS:** 3.33
+- **Sharpe IS medio:** 0.40
+- **Sharpe OOS medio:** -0.03
+- **Decaimento medio:** -0.43
+- **Janelas com OOS Sharpe > 0.8:** 3/8
+- **Janelas com OOS Sharpe > 0.6:** 3/8
+- **Menor Sharpe OOS:** -1.32
+- **Maior Sharpe OOS:** 1.87
 
-**Veredito:** ✅ **ROBUSTO.** Os parametros generalizam bem fora-da-amostra.
+**Veredito:** ❌ **OVERFIT.** Os parametros nao generalizam para dados nao vistos.
 
 ## Baseline: LiquidityStress DESATIVADO
 Compara o desempenho OOS com sinal (DXY=0.5%, VIX=10.0%) vs 
@@ -100,8 +100,8 @@ de DXY=0.5% e VIX=10.0%, o sweep original nao foi overfit.*
 - **Thresholds proximos (DXY≈0.5%, VIX≈10.0%):** 0/8 janelas
 
 ### Comparacao no OOS
-- **Media Sweep OOS:** 0.90
-- **Media Fixo OOS:** 0.90
+- **Media Sweep OOS:** -0.03
+- **Media Fixo OOS:** -0.03
 - Praticamente empatados (+0.00) — 
   o parametro fixo 0.5/10.0 e tao bom quanto re-otimizar.
 
@@ -110,17 +110,17 @@ de DXY=0.5% e VIX=10.0%, o sweep original nao foi overfit.*
 ## Conclusao Final
 
 ### Metricas Consolidadas
-- **OOS Sharpe medio (parametros fixos):** 0.90
-- **Janelas com Sharpe > 0.6:** 4/8
-- **Decaimento medio IS->OOS:** +0.51
+- **OOS Sharpe medio (parametros fixos):** -0.03
+- **Janelas com Sharpe > 0.6:** 3/8
+- **Decaimento medio IS->OOS:** -0.43
 
 ### Veredito Final
-⚠️ **PARCIALMENTE ROBUSTO — USAR COM CAUTELA.**
+❌ **OVERFIT DETECTADO — NAO USAR EM PRODUCAO.**
 
-O desempenho OOS e razoavel, mas ha variacao significativa entre janelas. Recomendacoes:
-- Usar os parametros 0.5/10.0 mas monitorar o drawdown de perto
-- Considerar re-otimizacao periodica (a cada 3-6 meses)
-- Implementar um stop-loss de regime (se Sharpe rolling cair de 0.5, pausar)
+Os parametros 0.5/10.0 nao resistem a validacao walk-forward. Recomendacoes:
+- Remover o LiquidityStressSignal ou usar thresholds mais conservadores
+- Tentar parametros menos agressivos (ex: DXY=0.75%, VIX=15%)
+- Considerar que o flight-to-dollar pode ser raro demais pra otimizar
 
 ---
 _Gerado por walk_forward_validate.py_

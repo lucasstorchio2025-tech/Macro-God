@@ -1,6 +1,6 @@
 # COMPARATIVO — 3 Melhorias no TS-Momentum
 
-**Gerado em:** 2026-07-07 15:36 UTC
+**Gerado em:** 2026-07-12 15:40 UTC
 
 **Período:** 2021-10-27 → 2026-06-30 | **Símbolo:** XAUUSDm | **Período H4:** H4
 
@@ -8,12 +8,12 @@
 
 | Configuração | Trades | Sharpe | Sortino | Retorno% | CAGR% | MaxDD% | WinRate | Payoff | Expect$/trade | Final$ |
 |---|---|---|---|---|---|---|---|---|---|---|
-|   1. BASELINE (atual)            |  349 | 0.83 | 0.67 | +131.7% | +18.6% | -39.8% | 59.3% | 0.94 | $+1.89 | $1158.38 |
-|   2. Partial TP desligado        |  229 | 0.78 | 0.63 | +139.1% | +19.3% | -46.4% | 37.6% | 2.26 | $+3.04 | $1195.43 |
-|   3. Lookback reduzido           |  458 | 0.92 | 0.85 | +181.4% | +23.3% | -26.9% | 59.2% | 0.94 | $+1.98 | $1407.00 |
-| ★ 4. Só Tokyo                    |  318 | 1.33 | 0.97 | +302.6% | +32.6% | -25.5% | 63.5% | 0.91 | $+4.76 | $2013.16 |
-|   5. TUDO COMBINADO              |  254 | 0.86 | 0.69 | +181.6% | +23.3% | -37.4% | 39.0% | 1.99 | $+3.57 | $1407.87 |
-|   6. Tokyo + Lookback            |  387 | 0.80 | 0.64 | +135.4% | +18.9% | -33.0% | 59.4% | 0.85 | $+1.75 | $1177.10 |
+|   1. BASELINE (atual)            |  381 | 0.26 | 0.21 | +15.7% | +3.0% | -36.4% | 60.6% | 0.86 | $+1.02 | $578.44 |
+|   2. Partial TP desligado        |  245 | 0.02 | 0.01 | -6.8% | -1.4% | -50.1% | 38.4% | 1.99 | $+1.21 | $466.13 |
+|   3. Lookback reduzido           |  513 | 0.04 | 0.04 | -4.9% | -1.0% | -32.6% | 59.6% | 0.85 | $+0.74 | $475.56 |
+| ★ 4. Só Tokyo                    |  334 | 1.14 | 0.86 | +124.5% | +17.8% | -18.9% | 63.2% | 0.94 | $+2.52 | $1122.50 |
+|   5. TUDO COMBINADO              |  276 | -0.41 | -0.33 | -39.2% | -9.6% | -67.0% | 36.2% | 1.87 | $+0.34 | $303.78 |
+|   6. Tokyo + Lookback            |  426 | -0.41 | -0.33 | -34.5% | -8.2% | -59.9% | 57.5% | 0.79 | $+0.21 | $327.27 |
 
 ## Configurações Testadas
 
@@ -28,21 +28,21 @@
 
 | Configuração | TP | Partial TP | SL | TIME | REGIME_EXIT |
 |---|---|---|---|---|---|
-| 1. BASELINE (atual)            |  82 | 118 | 137 |   4 |   8 |
-| 2. Partial TP desligado        |  79 |   0 | 138 |   4 |   8 |
-| 3. Lookback reduzido           | 109 | 155 | 184 |   2 |   8 |
-| 4. Só Tokyo                    |  81 | 111 | 113 |   1 |  12 |
-| 5. TUDO COMBINADO              |  91 |   0 | 152 |   1 |  10 |
-| 6. Tokyo + Lookback            |  93 | 129 | 154 |   1 |  10 |
+| 1. BASELINE (atual)            |  93 | 133 | 146 |   1 |   8 |
+| 2. Partial TP desligado        |  89 |   0 | 147 |   1 |   8 |
+| 3. Lookback reduzido           | 124 | 175 | 204 |   2 |   8 |
+| 4. Só Tokyo                    |  86 | 116 | 120 |   1 |  11 |
+| 5. TUDO COMBINADO              |  92 |   0 | 173 |   1 |  10 |
+| 6. Tokyo + Lookback            |  98 | 139 | 178 |   1 |  10 |
 
 ## Frequência de Trades
 
-- **1. BASELINE (atual)           **:  349 trades em 4.7 anos → 74/ano → **1.4/semana**
-- **2. Partial TP desligado       **:  229 trades em 4.7 anos → 49/ano → **0.9/semana**
-- **3. Lookback reduzido          **:  458 trades em 4.7 anos → 97/ano → **1.9/semana**
-- **4. Só Tokyo                   **:  318 trades em 4.7 anos → 68/ano → **1.3/semana**
-- **5. TUDO COMBINADO             **:  254 trades em 4.7 anos → 54/ano → **1.0/semana**
-- **6. Tokyo + Lookback           **:  387 trades em 4.7 anos → 82/ano → **1.6/semana**
+- **1. BASELINE (atual)           **:  381 trades em 4.7 anos → 81/ano → **1.6/semana**
+- **2. Partial TP desligado       **:  245 trades em 4.7 anos → 52/ano → **1.0/semana**
+- **3. Lookback reduzido          **:  513 trades em 4.7 anos → 109/ano → **2.1/semana**
+- **4. Só Tokyo                   **:  334 trades em 4.7 anos → 71/ano → **1.4/semana**
+- **5. TUDO COMBINADO             **:  276 trades em 4.7 anos → 59/ano → **1.1/semana**
+- **6. Tokyo + Lookback           **:  426 trades em 4.7 anos → 91/ano → **1.7/semana**
 
 ## Análise por Regime (config vencedora)
 
@@ -50,25 +50,24 @@ Detalhamento da melhor: **4. Só Tokyo**
 
 | Regime | Trades | Win Rate | P&L Total | Média |
 |--------|--------|----------|-----------|-------|
-| normal | 134 | 67.2% | $+810.17 | $+6.05 |
-| risk_off | 79 | 54.4% | $-26.93 | $-0.34 |
-| risk_on | 105 | 65.7% | $+729.92 | $+6.95 |
+| normal | 256 | 66.8% | $+870.92 | $+3.40 |
+| risk_off | 78 | 51.3% | $-28.81 | $-0.37 |
 
 ## Ganho sobre o Baseline
 
-- **2. Partial TP desligado       **: Sharpe 0.83→0.78 (-0.05) | CAGR 18.6%→19.3% (+0.8pp) | Final $1158→$1195 ($+37)
-- **3. Lookback reduzido          **: Sharpe 0.83→0.92 (+0.08) | CAGR 18.6%→23.3% (+4.8pp) | Final $1158→$1407 ($+249)
-- **4. Só Tokyo                   **: Sharpe 0.83→1.33 (+0.49) | CAGR 18.6%→32.6% (+14.1pp) | Final $1158→$2013 ($+855)
-- **5. TUDO COMBINADO             **: Sharpe 0.83→0.86 (+0.03) | CAGR 18.6%→23.3% (+4.8pp) | Final $1158→$1408 ($+249)
-- **6. Tokyo + Lookback           **: Sharpe 0.83→0.80 (-0.03) | CAGR 18.6%→18.9% (+0.4pp) | Final $1158→$1177 ($+19)
+- **2. Partial TP desligado       **: Sharpe 0.26→0.02 (-0.25) | CAGR 3.0%→-1.4% (-4.4pp) | Final $578→$466 ($-112)
+- **3. Lookback reduzido          **: Sharpe 0.26→0.04 (-0.22) | CAGR 3.0%→-1.0% (-4.0pp) | Final $578→$476 ($-103)
+- **4. Só Tokyo                   **: Sharpe 0.26→1.14 (+0.87) | CAGR 3.0%→17.8% (+14.8pp) | Final $578→$1122 ($+544)
+- **5. TUDO COMBINADO             **: Sharpe 0.26→-0.41 (-0.68) | CAGR 3.0%→-9.6% (-12.6pp) | Final $578→$304 ($-275)
+- **6. Tokyo + Lookback           **: Sharpe 0.26→-0.41 (-0.68) | CAGR 3.0%→-8.2% (-11.2pp) | Final $578→$327 ($-251)
 
 ## Veredito
 
 **Melhor configuração:** 4. Só Tokyo
 
-- Sharpe **1.33** (vs 0.83 do baseline)
-- CAGR **32.6%** (vs 18.6%)
-- Final **$2013** (vs $1158)
+- Sharpe **1.14** (vs 0.26 do baseline)
+- CAGR **17.8%** (vs 3.0%)
+- Final **$1122** (vs $578)
 
 ✅ **Recomendação:** Sharpe > 1.0. Esta configuração pode ir para dry-run.
 

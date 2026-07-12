@@ -178,7 +178,7 @@ def write_verdict(results: list, baseline_label: str = "legacy_cot",
 
     lines = []
     lines.append("# VEREDITO — Backtest Wealth_Engine v2\n")
-    lines.append(f"Gerado em: {pd.Timestamp.utcnow().strftime('%Y-%m-%d %H:%M')} UTC\n")
+    lines.append(f"Gerado em: {pd.Timestamp.now('UTC').strftime('%Y-%m-%d %H:%M')} UTC\n")
     lines.append("## Comparação lado a lado\n")
     lines.append("Métrica | " + " | ".join(df["label"].astype(str)))
     lines.append("---|" + "---|" * len(df))

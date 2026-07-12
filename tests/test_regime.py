@@ -41,13 +41,13 @@ def test_risk_on_low_vix_without_spy():
 def test_always_normal():
     """AlwaysNormalRegime sempre devolve 'normal'."""
     reg = AlwaysNormalRegime()
-    assert reg.at(pd.Timestamp.utcnow(), {}) == "normal"
+    assert reg.at(pd.Timestamp.now('UTC'), {}) == "normal"
 
 
 def test_no_regime_returns_normal():
     """Sem VIX carregado, não deve crashar — cai em 'normal'."""
     regime = RuleBasedRegime(vix=None)
-    r = regime.at(pd.Timestamp.utcnow(), {})
+    r = regime.at(pd.Timestamp.now('UTC'), {})
     assert r in ("normal", "risk_on"), f"Sem VIX deveria ser normal/risk_on, got {r}"
 
 

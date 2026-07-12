@@ -115,7 +115,7 @@ def _staleness_check(rates, sym: str, max_hours: int = 6) -> bool:
     # Checa idade da última barra
     try:
         bar_time = pd.Timestamp(last["time"], unit="s", tz="UTC")
-        age_hours = (pd.Timestamp.utcnow() - bar_time).total_seconds() / 3600
+        age_hours = (pd.Timestamp.now('UTC') - bar_time).total_seconds() / 3600
         if age_hours > max_hours:
             print(f"  [DATA QUALITY] {sym}: dado velho ({age_hours:.1f}h > {max_hours}h)")
             return False
@@ -223,7 +223,7 @@ def compute_signal_detail(mt5, symbol: str, prices: dict[str, pd.DataFrame],
 
 def _session_name() -> str:
     """Classifica hora UTC em sessão forex."""
-    h = pd.Timestamp.utcnow().hour
+    h = pd.Timestamp.now('UTC').hour
     if 0 <= h < 4:
         return "Sydney"
     elif 4 <= h < 8:
@@ -245,7 +245,7 @@ def compute_live_signals(mt5) -> dict[str, tuple[str, float]]:
     if not prices:
         return {}
 
-    now_ts = pd.Timestamp.utcnow()
+    now_ts = pd.Timestamp.now('UTC')
     regime = _get_regime()
     regime_now = regime.at(now_ts, {"prices": prices})
 
@@ -326,7 +326,7 @@ def compute_signals_with_detail(mt5) -> tuple[dict[str, tuple[str, float]], dict
 
 def get_current_regime() -> str:
     """Atalho pro executor perguntar o regime atual sem computar sinais."""
-    return _get_regime().at(pd.Timestamp.utcnow(), {})
+    return _get_regime().at(pd.Timestamp.now('UTC'), {})
 
 
 __all__ = [

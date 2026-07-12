@@ -425,16 +425,10 @@ def health_check_kill_switch(meta: MetaState) -> bool:
                   f"que antigo ({older_pnl:.2f}). Desligando meta-learner.")
             meta.risk_multiplier = 1.0
             meta.risk_multiplier_reasoning = "KILL-SWITCH: meta-learner desligado (PnL degradando)"
-            meta.needs_llm_consult = False
+            meta.needs_llm_consult = False  # chama o setter, ativa _kill_switch_active
             meta.trades_since_last_consult = 0
             save_meta_state_to_file(meta)
             return True
-
-        # NOTA: correlacao risk_mult x PnL nao e possivel hoje porque
-        # o risk_multiplier vigente nao e logado no trade_log.jsonl individual.
-        # Ficamos so com a comparacao PnL recente vs antigo (acima).
-        # Se no futuro o risk_mult for adicionado ao payload de cada DEAL_FOUND,
-        # este bloco pode ser ativado com a correlacao.
     except Exception as e:
         print(f"[META KILL-SWITCH] Erro no health check: {type(e).__name__}: {e}")
         return False
@@ -464,5 +458,6 @@ def quick_analysis(meta: MetaState) -> str:
 
 __all__ = [
     "consult_llm", "quick_analysis", "call_ollama", "parse_llm_response",
+    "health_check_kill_switch",
     "read_trade_log", "read_decision_log", "read_market_context",
 ]

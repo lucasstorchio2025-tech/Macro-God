@@ -17,6 +17,18 @@ tests = [
     ("tests.test_liquidity_signal", ["test_stress_scenario", "test_normal_scenario",
                                       "test_dxy_very_strong", "test_panic_without_flight_to_dollar",
                                       "test_missing_data", "test_missing_dxy_change"]),
+    ("tests.test_meta_learner", [
+        "test_parse_valid_json", "test_parse_clamp_risk_multiplier_high",
+        "test_parse_clamp_risk_multiplier_low", "test_parse_clamp_confidence",
+        "test_parse_reasoning_truncated", "test_parse_invalid_json",
+        "test_parse_empty", "test_parse_none", "test_parse_missing_keys",
+        "test_parse_junk_middleware", "test_parse_non_dict_response",
+    ]),
+    ("tests.test_executor_mocked", [
+        "test_hard_cap_respected", "test_risk_cap_rejects_excess",
+        "test_risk_cap_allows_safe", "test_vol_target_called_via_strategy",
+        "test_risk_config_consistency",
+    ]),
 ]
 
 passed = failed = 0

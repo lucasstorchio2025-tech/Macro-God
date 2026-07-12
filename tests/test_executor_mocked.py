@@ -1,10 +1,14 @@
-"""test_executor_mocked.py — Testes do executor com MT5 mockado.
+"""test_executor_mocked.py — Testes de consistencia do executor (sem MT5).
 
 Valida que:
   1. hard_cap = min(RISK_OVERRIDE_PCT, DAILY_DD_PCT) é respeitado
   2. risk_cap rejeita trades que excedem o override
   3. vol_target_scalar é chamado via TSMomentumStrategy → sizing
-  4. O fluxo de filtros (dd_check, max_positions, cooldown) funciona
+  4. Config de risco é consistente (assert em vez de print)
+
+NOTA: Estes testes não mockam MT5 porque testam APENAS a lógica
+matemática/config, não a execução de ordens. Testes com mock real
+precisariam do pacote unittest.mock + mt5 (fora do escopo atual).
 """
 import sys
 import json
@@ -68,7 +72,7 @@ def test_vol_target_called_via_strategy():
     from datetime import timezone
 
     strategy = TSMomentumStrategy()
-    now = pd.Timestamp.utcnow()
+    now = pd.Timestamp.now('UTC')
 
     # Cria preços sintéticos (precisa de MOMENTUM_LOOKBACK_BARS+ barras)
     n = C.MOMENTUM_LOOKBACK_BARS + 10
@@ -106,20 +110,30 @@ def test_vol_target_called_via_strategy():
 
 def test_risk_config_consistency():
     """Verifica consistência matemática dos limites de risco."""
-    # DAILY_DD_PCT >= RISK_OVERRIDE_PCT (senão override é silenciosamente capado)
-    for sym, override in C.RISK_OVERRIDE_PCT.items():
-        if override > C.DAILY_DD_PCT:
-            print(f"  [AVISO] {sym} override={override}% > DAILY_DD={C.DAILY_DD_PCT}% -> sera capado")
-    
-    # TOTAL_RISK_CAP_PCT >= maior override (senão exposição total bloqueia antes)
-    max_override = max(C.RISK_OVERRIDE_PCT.values()) if C.RISK_OVERRIDE_PCT else 0
-    if max_override > C.TOTAL_RISK_CAP_PCT:
-        print(f"  [AVISO] max_override={max_override}% > TOTAL_CAP={C.TOTAL_RISK_CAP_PCT}% -> trades bloqueados")
-    
     # WEEKLY_DD_PCT deve ser >= DAILY_DD_PCT (senão DD semanal pode travar antes do diário)
     assert C.WEEKLY_DD_PCT >= C.DAILY_DD_PCT, (
         f"WEEKLY_DD ({C.WEEKLY_DD_PCT}%) < DAILY_DD ({C.DAILY_DD_PCT}%)"
     )
+    
+    # DAILY_DD_PCT >= RISK_OVERRIDE_PCT (senão override é silenciosamente capado)
+    for sym, override in C.RISK_OVERRIDE_PCT.items():
+        assert override <= C.DAILY_DD_PCT, (
+            f"{sym} override={override}% > DAILY_DD={C.DAILY_DD_PCT}% -> sera capado"
+        )
+    
+    # TOTAL_RISK_CAP_PCT >= maior override (senão exposição total bloqueia antes)
+    max_override = max(C.RISK_OVERRIDE_PCT.values()) if C.RISK_OVERRIDE_PCT else 0
+    assert max_override <= C.TOTAL_RISK_CAP_PCT, (
+        f"max_override={max_override}% > TOTAL_CAP={C.TOTAL_RISK_CAP_PCT}% -> trades bloqueados"
+    )
+    
+    # Um trade sozinho não deve consumir 100% do orçamento diário de risco
+    # (override deve ser estritamente menor que DAILY_DD_PCT para deixar margem)
+    for sym, override in C.RISK_OVERRIDE_PCT.items():
+        if override >= C.DAILY_DD_PCT:
+            print(f"  [AVISO] {sym} override={override}% >= DAILY_DD={C.DAILY_DD_PCT}%"
+                  f" -> 1 trade consome 100%+ do orcamento diario!")
+    
     print("  PASS: config de risco internamente consistente")
 
 

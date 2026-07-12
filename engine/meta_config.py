@@ -133,6 +133,9 @@ class MetaState:
     trades_since_last_consult: int = 0
     total_trades_analyzed: int = 0
 
+    # Kill-switch: desliga meta-learner se PnL estiver degradando
+    _kill_switch_active: bool = False
+
     # ── Metodos ──
 
     @property
@@ -160,6 +163,9 @@ class MetaState:
     @property
     def needs_llm_consult(self) -> bool:
         """True se devemos consultar o LLM agora."""
+        # Kill-switch ativo: nunca consulta LLM
+        if self._kill_switch_active:
+            return False
         # Gatilho 1: a cada 10 trades
         if self.trades_since_last_consult >= 10:
             return True
@@ -170,6 +176,17 @@ class MetaState:
         if not self.last_llm_consult_utc and self.rolling_n >= 5:
             return True
         return False
+
+    @needs_llm_consult.setter
+    def needs_llm_consult(self, value: bool):
+        """Setter para o kill-switch desligar consultas ao LLM.
+
+        Quando setado para False pelo kill-switch, ativa
+        _kill_switch_active para sobrescrever os gatilhos normais.
+        """
+        if not value:
+            self._kill_switch_active = True
+            self.trades_since_last_consult = 0
 
     def on_trade_close(self, trade: dict):
         """Atualiza estado com um trade fechado."""
@@ -312,6 +329,7 @@ class MetaState:
             "trades_since_last_consult": self.trades_since_last_consult,
             "total_trades_analyzed": self.total_trades_analyzed,
             "recent_trades_count": len(self.recent_trades),
+            "kill_switch_active": self._kill_switch_active,
         }
 
 
@@ -344,6 +362,7 @@ def load_meta_state(state_path: Path) -> MetaState:
                     last_llm_consult_utc=meta_data.get("last_llm_consult_utc", ""),
                     trades_since_last_consult=meta_data.get("trades_since_last_consult", 0),
                     total_trades_analyzed=meta_data.get("total_trades_analyzed", 0),
+                    _kill_switch_active=meta_data.get("kill_switch_active", False),
                 )
         except Exception:
             pass

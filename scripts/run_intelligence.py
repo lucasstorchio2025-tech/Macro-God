@@ -108,7 +108,7 @@ def run_analysis() -> dict:
     except Exception as e:
         print(f"  [AVISO] SPY indisponível ({e}) — correlação gold×ações desativada")
     regime = RuleBasedRegime(vix=vix, prices_for_corr=prices, gold_equity_corr=ge_corr)
-    regime_str = regime.at(__import__("pandas").Timestamp.utcnow(), {})
+    regime_str = regime.at(__import__("pandas").Timestamp.now('UTC'), {})
 
     snap = analyze_market(intel, prices, vix, regime_str, news_path=NEWS_PATH)
 
