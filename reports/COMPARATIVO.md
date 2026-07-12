@@ -69,7 +69,9 @@ Detalhamento da melhor: **4. Só Tokyo**
 - CAGR **17.8%** (vs 3.0%)
 - Final **$1122** (vs $578)
 
-✅ **Recomendação:** Sharpe > 1.0. Esta configuração pode ir para dry-run.
+⚠️ **RESSALVA:** Sharpe 1.14 é no período completo. A validação walk-forward
+(WALK_FORWARD_TOKYO.md) mostra OOS médio 0.41 e conclui **OVERFIT**.
+**Não ir pra live sem resolver essa contradição.**
 
 ## Gráfico
 

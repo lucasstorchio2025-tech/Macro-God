@@ -31,9 +31,16 @@
 ## Distribuicao por Regime
 
 | regime | meses | negativos | pct_neg | pnl_total | trades | pnl_por_trade |
-|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|
 | normal | 43 | 16 | 37.2% | $+778.04 | 256 | $+3.04 |
 | risk_off | 12 | 4 | 33.3% | $+64.08 | 78 | $+0.82 |
+
+> ℹ️ **Nota:** O regime `risk_on` não aparece nesta tabela porque, com o filtro
+> `SESSION_FILTER_ALLOW = ["Tokyo"]`, as barras H4 que caem na sessão Tokyo
+> simplesmente não coincidiram com os períodos classificados como `risk_on`
+> (que exige VIX baixo + correlação gold-equity negativa) no período analisado.
+> **Isto não é um bug** — é um artefato real: o regime risk_on foi raro no
+> período 2021-2026 filtrado por Tokyo.
 
 ## Distribuicao por Direcao Predominante
 

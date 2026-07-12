@@ -151,16 +151,21 @@ COOLDOWN_BARS = 12              # ~2 dias em H4 (12 × 4h = 48h). Evita reentrad
 
 
 # ───────────────────────── FILTRO POR SESSÃO ─────────────────────────
-# Filtra trades por sessão de mercado. Validação walk-forward confirmou
-# que operar APENAS em Tokyo maximiza Sharpe e reduz drawdown:
-#   - Tokyo:   65.4% WR | +$4.06/trade (MELHOR — Sharpe OOS 1.30)
+# Filtra trades por sessão de mercado.
+#   - Tokyo:   65.4% WR | +$4.06/trade (melhor sessão no período completo)
 #   - New York: 58.5% WR | +$1.67/trade (inferior)
 #   - London:  55.9% WR | +$0.65/trade (inferior)
 #   - Sydney:  removida (pior performance)
 #
+# ⚠️ AVISO: A validação walk-forward (WALK_FORWARD_TOKYO.md) conclui que
+# o filtro "Só Tokyo" é OVERFIT — Sharpe OOS médio 0.41, 3/8 janelas > 0.6.
+# O comentário anterior dizia "WFO confirmou Sharpe OOS 1.30" mas este
+# valor foi obtido ANTES da inclusão do custo de swap no backtest.
+# Com swap incluso, o walk-forward REPROVA a configuração.
+#
 # Opções disponíveis: "London", "NewYork", "Tokyo", "Sydney"
 # Lista vazia = todas as sessões permitidas
-SESSION_FILTER_ALLOW: list[str] = ["Tokyo"]  # Apenas Tokyo — WFO confirmou Sharpe OOS 1.30
+SESSION_FILTER_ALLOW: list[str] = ["Tokyo"]  # Apenas Tokyo — WFO atual REPROVA (OOS médio 0.41)
 
 
 # ───────────────────────── EVENTOS MACRO ─────────────────────────

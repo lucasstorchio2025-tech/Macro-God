@@ -252,6 +252,19 @@ class MetaState:
         """Retorna o multiplicador de risco atual."""
         return self.risk_multiplier
 
+    def reset_kill_switch(self):
+        """Reativa o meta-learner apos kill-switch.
+
+        Uso:
+            meta.reset_kill_switch()
+            save_meta_state(STATE_PATH, meta)
+        """
+        self._kill_switch_active = False
+        self.risk_multiplier = DEFAULT_RISK_MULT
+        self.risk_multiplier_reasoning = "Kill-switch resetado manualmente"
+        self.risk_multiplier_confidence = 0.0
+        self.trades_since_last_consult = 10  # gatilho rapido na proxima consulta
+
     def apply_llm_recommendation(self, rec: dict):
         """Aplica recomendacao do LLM validada."""
         rm = rec.get("risk_multiplier", DEFAULT_RISK_MULT)

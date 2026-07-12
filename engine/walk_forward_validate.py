@@ -353,6 +353,11 @@ def validate_sweep_per_window(data: dict, windows: list[dict]) -> list[dict]:
 
 # ═════════════════════════════ RELATÓRIO ═════════════════════════════
 def _fmt_tabela(headers: list[str], rows: list[dict]) -> str:
+    """Formata lista de dicts como tabela markdown.
+
+    Faz match case-insensitive entre headers e keys do dict,
+    ignorando underscores, espacos e caracteres especiais.
+    """
     if not rows:
         return "(sem dados)"
     lines = []
@@ -362,10 +367,11 @@ def _fmt_tabela(headers: list[str], rows: list[dict]) -> str:
     for r in rows:
         vals = []
         for h in headers:
-            # match key
             found = None
+            h_norm = h.lower().replace("_", "").replace(" ", "").replace("%", "")
             for k in keys:
-                if k.lower() == h.lower() or k.lower().replace("_", "") == h.lower().replace("_", ""):
+                k_norm = k.lower().replace("_", "").replace(" ", "").replace("%", "")
+                if k_norm == h_norm:
                     found = r.get(k, "")
                     break
             if found is None:
@@ -536,9 +542,9 @@ def gerar_relatorio(result_fixo: list[dict],
         dxy_vals = [r["is_best_dxy"] for r in result_sweep]
         vix_vals = [r["is_best_vix"] for r in result_sweep]
         lines.append("### Distribuicao dos Thresholds Vencedores por Janela")
-        for d, v in zip(dxy_vals, vix_vals):
+        for idx, (d, v) in enumerate(zip(dxy_vals, vix_vals), 1):
             match = "★" if (abs(d - 0.5) < 0.01 and abs(v - 10.0) < 0.01) else " "
-            lines.append(f"- Janela {len([x for x in dxy_vals[:dxy_vals.index(d)+1]])}: "
+            lines.append(f"- Janela {idx}: "
                          f"DXY={d}%  VIX={v}%  {match}")
         lines.append("")
 
