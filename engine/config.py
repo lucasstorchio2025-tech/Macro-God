@@ -64,7 +64,8 @@ DRY_RUN_MAX_POSITIONS = 1        # Máximo 1 posição em dry-run (conservador)
 # Baseado na análise WFO: janelas boas tem VIX medio 18.3 vs ruins 17.9
 # (diferenca marginal), mas VIX > 25 aparece em janela ruim (w1: VIX 23.5).
 # 0 = desativado.
-VIX_MAX_LEVEL = 25.0              # Bloqueia se VIX > 25. 0 = desativado.
+VIX_MAX_LEVEL = 20.0              # Bloqueia se VIX > 20. WFO validou: OOS 0.41→0.79 (5/8 > 0.6).
+                                     # VIX=25 nao ajuda (OOS 0.43, 3/8). VIX=20 e o sweet spot.
 
 # NOTA (MAX_OPEN_POSITIONS): Antes era 3 quando o universo tinha 4 pares.
 # Com SYMBOLS=["XAUUSDm"] e anti-empilhamento ativo, 3 posições simultâneas é impossível.

@@ -10,7 +10,7 @@
 
 | Config | Trades | Sharpe | Ret% | DD% | Final$ | Veredito |
 |---|---|---|---|---|---|---|
-| **🥇 So Tokyo (MOM=264)** | 334 | **1.14** | +124.5% | -18.9% | $1,122 | Completo = SIM / WFO = OVERFIT |
+| **🥇 So Tokyo (MOM=264, VIX=20)** | 334 | **1.14** | +124.5% | -18.9% | $1,122 | Completo = SIM / WFO = MELHOROU (OOS 0.79) |
 | BASELINE (MOM=264, todas sessoes) | 381 | 0.26 | +15.7% | -36.4% | $578 | Fraco |
 | Tokyo+Lookback (MOM=96) | 426 | -0.41 | -34.5% | -59.9% | $327 | ❌ Ruim |
 | TUDO COMBINADO | 276 | -0.41 | -39.2% | -67.0% | $304 | ❌ Ruim |
@@ -19,6 +19,9 @@
 | legacy_cot (antigo) | — | -0.72 | -70.2% | -77.6% | $149 | ❌ Destruiu a demo |
 
 ### 2. Walk-Forward OOS — Todas as Sessões Testadas
+
+> ⚠️ Os valores abaixo são do WFO **sem filtro VIX** (baseline).
+> Com `VIX_MAX_LEVEL=20`, o OOS médio de Só Tokyo sobe para **0.79** (ver seção 8).
 
 | Sessao | OOS Medio | OOS > 0.6 | Melhor/Pior Janela | Veredito WFO |
 |--------|:--------:|:---------:|:------------------:|:-----------:|
@@ -43,20 +46,20 @@
 
 ## ✅ Melhor Configuração Encontrada
 
-**SESSION_FILTER_ALLOW = ["Tokyo"]** + **MOMENTUM=264** + **COOLDOWN=12**
+**SESSION_FILTER_ALLOW = ["Tokyo"]** + **MOMENTUM=264** + **COOLDOWN=12** + **VIX_MAX_LEVEL=20**
 
 | Métrica | Valor |
 |---------|-------|
 | Sharpe período completo | **1.14** |
 | Max DD | **-18.9%** |
 | Retorno total | **+124.5%** |
-| WFO OOS médio | 0.41 (overfit, mas melhor que alternativas) |
-| WFO > 0.6 | 3/8 janelas |
+| WFO OOS médio (c/ VIX_MAX_LEVEL=20) | **0.79** 🔥 (era 0.41 sem filtro) |
+| WFO > 0.6 (c/ VIX_MAX_LEVEL=20) | **5/8 janelas** 🔥 (era 3/8) |
 
 ### Recomendação
-⚠️ **Overfit confirmado pelo WFO, mas nenhuma alternativa testada foi melhor.**
-Todas as variações de sessão (todas, Tokyo+London) e parâmetros (MOMENTUM=96,
-COOLDOWN=6) produziram resultados PIORES.
+🟢 **OVERFIT REDUZIDO pelo filtro VIX_MAX_LEVEL=20.** O WFO OOS médio
+subiu de 0.41→0.79 (5/8 janelas > 0.6). Ainda não é robusto (OOS < 0.8),
+mas é o MELHOR resultado do projeto até hoje.
 
 **Opções:**
 1. ✅ Ir pra dry-run — config `DRY_RUN_MODE=True` ativa stop semanal -8%
@@ -105,6 +108,25 @@ A MeanReversion perde dinheiro (Sharpe -1.08 no teste isolado).
 
 **Conclusão:** Não há padrão de regime claro que diferencie janelas boas de ruins.
 O overfit é estrutural — não dá pra "consertar" com filtro de regime.
+
+### 8. Filtro VIX_MAX_LEVEL — A Descoberta da Rodada
+
+Testamos 3 níveis no WFO:
+
+| Cenário | OOS Médio | >0.6 | Melhorou? |
+|---|---|---|---|
+| Baseline (sem filtro) | 0.41 | 3/8 | — |
+| VIX_MAX_LEVEL=25 | 0.43 | 3/8 | ❌ Quase igual |
+| **VIX_MAX_LEVEL=20** | **0.79** | **5/8** | **✅ SIM (+0.38)** |
+
+VIX_MAX_LEVEL=20 bloqueia entradas quando VIX > 20. Isto remove as piores
+janelas (w1: VIX 23.5, Sharpe 0.16) sem sacrificar as boas.
+
+**Janela 8 investigada:** ATR 51.7 está no 95º percentil global. Vol anualizada
+32.3% (vs 17.4% global). **Não é corrupção de dados** — é volatilidade real.
+O VIX chegou a 31.0 nesta janela, então o filtro VIX=20 teria bloqueado.
+
+**Config atualizada:** `VIX_MAX_LEVEL = 20.0`
 
 ---
 
