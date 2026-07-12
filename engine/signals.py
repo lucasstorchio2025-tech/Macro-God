@@ -364,6 +364,45 @@ class BreakoutStrategy(Strategy):
         return out
 
 
+# ═════════════════════════════ COMPOSITE (regime-based switching) ═════════════════════════════
+class CompositeStrategy(Strategy):
+    """Alterna entre estratégias conforme o regime de mercado.
+
+    TS-Momentum funciona bem em risk_on/normal (momento comprovado).
+    MeanReversion pode ter edge em risk_off (reversão à média em estresse).
+
+    Configuração padrão:
+      risk_on  → TS-Momentum (momentum bruto, sem filtro)
+      normal   → TS-Momentum (momentum com filtro de tendência D1)
+      risk_off → MeanReversion (reversão à média — range-bound)
+      crisis   → NONE (não opera)
+
+    Uso:
+      comp = CompositeStrategy({
+          "risk_on": TSMomentumStrategy(),
+          "normal": TSMomentumStrategy(),
+          "risk_off": MeanReversionStrategy(),
+      }, default=TSMomentumStrategy())
+    """
+    name = "composite"
+
+    def __init__(self, strategies: dict[str, Strategy],
+                 default: Optional[Strategy] = None):
+        """
+        Args:
+            strategies: {regime: Strategy} — qual estratégia usar em cada regime
+            default: fallback se o regime não está no dict (padrão: TS-Momentum)
+        """
+        self._strategies = strategies
+        self._default = default or TSMomentumStrategy()
+
+    def signals(self, ctx: dict) -> dict[str, tuple[str, float]]:
+        regime = ctx.get("regime", "normal")
+        strat = self._strategies.get(regime, self._default)
+        return strat.signals(ctx)
+
+
 __all__ = ["Strategy", "TSMomentumStrategy",
            "COTContrarianStrategy", "LegacyCOTStrategy",
-           "MeanReversionStrategy", "BreakoutStrategy"]
+           "MeanReversionStrategy", "BreakoutStrategy",
+           "CompositeStrategy"]

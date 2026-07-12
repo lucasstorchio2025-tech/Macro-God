@@ -83,6 +83,11 @@ COMMENT_TAG = C.COMMENT_TAG
 POLL_SECONDS = int(os.environ.get("WEALTH_POLL_SECONDS", "300"))
 COOLDOWN_SECONDS = C.COOLDOWN_BARS * 4 * 3600  # 12 barras H4 = 48h em segundos
 
+# Modo dry-run: limites mais apertados
+DRY_RUN_MODE = C.DRY_RUN_MODE
+if DRY_RUN_MODE:
+    notify("DRY-RUN MODE ATIVO — limites apertados ativos", "warn")
+
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
@@ -160,11 +165,21 @@ def mt5_connect():
 
 # ============== FILTROS HARD (CORRIGIDOS v2) ==============
 def check_daily_weekly_dd(current_balance: float, state: dict) -> tuple[bool, str]:
-    """Retorna (pode_operar, motivo_se_nao). Reseta contadores diariamente/semanalmente."""
+    """Retorna (pode_operar, motivo_se_nao). Reseta contadores diariamente/semanalmente.
+
+    Em DRY-RUN mode, usa limites MAIS APERTADOS (DRY_RUN_WEEKLY_DD_PCT)
+    para proteger capital durante validacao ao vivo.
+    """
     now = datetime.now(timezone.utc)
     weekday = now.weekday()
     today_str = now.date().isoformat()
     week_str = now.strftime("%Y-W%V")
+
+    # Limites adaptativos: dry-run usa limites mais apertados
+    effective_daily = C.DRY_RUN_DAILY_DD_PCT if DRY_RUN_MODE else DAILY_DD_PCT
+    effective_weekly = C.DRY_RUN_WEEKLY_DD_PCT if DRY_RUN_MODE else WEEKLY_DD_PCT
+    daily_label = f"DRY_RUN({effective_daily}%)" if DRY_RUN_MODE else f"{effective_daily}%"
+    weekly_label = f"DRY_RUN({effective_weekly}%)" if DRY_RUN_MODE else f"{effective_weekly}%"
 
     if state.get("last_reset_day") != today_str:
         state["starting_balance_today"] = current_balance
@@ -182,10 +197,10 @@ def check_daily_weekly_dd(current_balance: float, state: dict) -> tuple[bool, st
     dd_dia_pct = (current_balance - base_dia) / base_dia * 100 if base_dia else 0
     dd_sem_pct = (current_balance - base_sem) / base_sem * 100 if base_sem else 0
 
-    if dd_dia_pct <= -DAILY_DD_PCT:
-        return False, f"DD diario {dd_dia_pct:.2f}% <= -{DAILY_DD_PCT}%. Bot pausado ate amanha."
-    if dd_sem_pct <= -WEEKLY_DD_PCT:
-        return False, f"DD semanal {dd_sem_pct:.2f}% <= -{WEEKLY_DD_PCT}%. Bot pausado ate segunda."
+    if dd_dia_pct <= -effective_daily:
+        return False, f"DD diario {dd_dia_pct:.2f}% <= {daily_label}. Bot pausado ate amanha."
+    if dd_sem_pct <= -effective_weekly:
+        return False, f"DD semanal {dd_sem_pct:.2f}% <= {weekly_label}. Bot pausado ate segunda."
     return True, ""
 
 

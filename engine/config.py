@@ -48,6 +48,15 @@ END_DEFAULT      = "2026-06-30"  # fim do backtest (snapshot do projeto)
 ACCOUNT_START_USD   = 500.0      # saldo inicial do backtest (mesmo da demo)
 RISK_PER_TRADE_PCT  = 5.0        # teto padrão de risco por trade (% do saldo)
 MAX_OPEN_POSITIONS  = 1          # XAUUSD — máximo 1 posição (apenas 1 símbolo ativo no momento).
+
+# ───────────────────────── DRY-RUN (PRODUÇÃO CONTROLADA) ─────────────────────────
+# Modo dry-run: limites MAIS APERTADOS para proteger capital durante validação
+# ao vivo (mesmo com overfit confirmado no WFO).
+# Ativar colocando DRY_RUN_MODE = True antes de ir pra live.
+DRY_RUN_MODE = False             # True = ativa limites mais apertados
+DRY_RUN_WEEKLY_DD_PCT = 8.0      # Stop semanal apertado em dry-run (-8%)
+DRY_RUN_DAILY_DD_PCT = 8.0       # Stop diário apertado em dry-run (-8%)
+DRY_RUN_MAX_POSITIONS = 1        # Máximo 1 posição em dry-run (conservador)
 # NOTA: Antes era 3 quando o universo tinha 4 pares (EURUSDm, GBPUSDm, USDJPYm, XAUUSDm).
 # Com SYMBOLS=["XAUUSDm"] e anti-empilhamento ativo, 3 posições simultâneas é impossível.
 # Mantido com valor 1 para clareza — se expandir para múltiplos símbolos no futuro, aumentar.
@@ -357,6 +366,7 @@ __all__ = [
     "EXPOSURE_SCALE",
     "GE_CORR_WINDOW_DAYS", "GE_CORR_RISKON_THRESHOLD",
     "GE_CORR_FAKE_RISKON_THRESHOLD", "GE_CORR_PANIC_THRESHOLD",
+    "DRY_RUN_MODE", "DRY_RUN_WEEKLY_DD_PCT", "DRY_RUN_DAILY_DD_PCT", "DRY_RUN_MAX_POSITIONS",
     "DXY_LIQUIDITY_STRESS_ENABLED", "DXY_LIQUIDITY_STRESS_UP_PCT",
     "VIX_LIQUIDITY_STRESS_UP_PCT", "DXY_LIQUIDITY_STRESS_LOOKBACK_BARS",
     "MOMENTUM_LOOKBACK_BARS", "MOMENTUM_SKIP_BARS",

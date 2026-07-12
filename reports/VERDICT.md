@@ -59,9 +59,52 @@ Todas as variações de sessão (todas, Tokyo+London) e parâmetros (MOMENTUM=96
 COOLDOWN=6) produziram resultados PIORES.
 
 **Opções:**
-1. Ir pra dry-run com a config atual monitorando DD semanal de -8%
+1. ✅ Ir pra dry-run — config `DRY_RUN_MODE=True` ativa stop semanal -8%
 2. Aceitar que o edge é marginal e não operar
-3. Explorar outras estratégias além de TS-Momentum ✅ TESTADO
+3. ✅ Regime-switching TESTADO (CompositeStrategy) — PIOR que TS-Momentum puro
+4. ✅ WFO por janela analisado — overfit é estrutural, não de regime
+
+### 5. Dry-Run Mode — Stop Semanal -8%
+
+Adicionado ao config.py: `DRY_RUN_MODE = False` / `DRY_RUN_WEEKLY_DD_PCT = 8.0`
+
+Ativar `DRY_RUN_MODE = True` no config.py antes de ir pra live:
+- TROCA: `WEEKLY_DD_PCT = 15%` → `DRY_RUN_WEEKLY_DD_PCT = 8%`
+- TROCA: `DAILY_DD_PCT = 12%` → `DRY_RUN_DAILY_DD_PCT = 8%`
+- O executor usa estes limites automaticamente
+
+### 6. Regime-Switching (CompositeStrategy) — TESTADO E REPROVADO
+
+| Estratégia | Sharpe | Ret% | DD% | Trades | WinRate |
+|---|---|---|---|---|---|
+| **TS-Momentum puro** | **1.14** | +124.5% | -18.9% | 334 | 63.2% |
+| Composite (TS+MeanRev) | 1.08 | +116.5% | -20.1% | 279 | 64.2% |
+
+Usar MeanReversion em risk_off PIORA o resultado (Sharpe 1.08 vs 1.14).
+A MeanReversion perde dinheiro (Sharpe -1.08 no teste isolado).
+
+### 7. WFO por Janela — Cruzamento Regime/Vol vs Sharpe OOS
+
+| Janela | Periodo | OOS Sharpe | VIX | risk_on% | risk_off% | ATR | VolAnual |
+|---|---|---|---|---|---|---|---|
+| 1❌ | 2022-09 → 2023-03 | 0.16 | 23.5 | 0% | 12% | 9.1 | 6.0% |
+| **2★** | 2023-03 → 2023-08 | **1.53** | 16.9 | 0% | 0% | 8.9 | 5.5% |
+| 3❌ | 2023-08 → 2024-01 | -0.18 | 15.0 | 0% | 0% | 7.8 | 4.8% |
+| 4❌ | 2024-01 → 2024-07 | -1.57 | 13.8 | 0% | 4% | 11.2 | 5.6% |
+| 5❌ | 2024-07 → 2024-12 | 0.06 | 17.6 | 0% | 31% | 13.0 | 5.7% |
+| **6★** | 2024-12 → 2025-06 | **1.70** | 21.2 | 0% | 32% | 19.1 | 6.9% |
+| **7★** | 2025-06 → 2025-11 | **1.90** | 16.9 | 0% | 2% | 22.8 | 7.0% |
+| 8❌ | 2025-11 → 2026-04 | -0.27 | 19.5 | 0% | 24% | 51.6 | 13.2% |
+
+**Comparação:**
+| Métrica | BOAS (n=3) | RUINS (n=5) | Diferença |
+|---|---|---|---|
+| VIX médio | 18.3 | 17.9 | +0.4 (marginal) |
+| ATR médio | 16.9 | 18.5 | -1.6 (leve) |
+| risk_off% | 11.3% | 14.2% | -2.9pp (leve) |
+
+**Conclusão:** Não há padrão de regime claro que diferencie janelas boas de ruins.
+O overfit é estrutural — não dá pra "consertar" com filtro de regime.
 
 ---
 

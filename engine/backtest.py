@@ -392,6 +392,7 @@ def run_backtest(
                                    (i - loss_streak_start_bar) < C.LOSS_STREAK_COOLDOWN_BARS)
         if slots > 0 and scale > 0.05 and not in_loss_streak_cooldown:
             ctx = ctx_at(i)
+            ctx["regime"] = regime  # Informa o regime atual pra estrategia (ex: CompositeStrategy)
             sigs = strategy.signals(ctx) if hasattr(strategy, "signals") else {}
             for sym, val in sigs.items():
                 if slots <= 0:
