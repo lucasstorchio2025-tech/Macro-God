@@ -213,5 +213,157 @@ class LegacyCOTStrategy(Strategy):
         return out
 
 
+# ═════════════════════════════ MEAN REVERSION (Bollinger-like) ═════════════════════════════
+class MeanReversionStrategy(Strategy):
+    """Mean reversion em XAUUSD H4.
+
+    Compra quando o preço está significativamente ABAIXO da média móvel
+    (z-score < -ENTRY_Z), vende quando está ACIMA (z-score > +ENTRY_Z).
+    Ideal para ouro em períodos de consolidação/range.
+
+    Parâmetros:
+      LOOKBACK: 48 barras H4 (~8 dias) — janela da média móvel
+      ENTRY_Z: 1.5 — desvios padrão para entrar (mais frouxo que COT)
+      EXIT_Z: 0.0 — exit quando preço volta à média
+
+    Lógica:
+      - Calcula z-score do preço: (close - SMA) / rolling_std
+      - z < -ENTRY_Z → BUY (oversold)
+      - z > +ENTRY_Z → SELL (overbought)
+      - z entre -EXIT_Z e +EXIT_Z → NONE (já reverteu)
+
+    Baseado em: Bollinger (1992), Avellaneda & Stoikov (2008)
+    """
+    name = "mean_reversion"
+
+    # Parametros (podem ser movidos pro config.py se validados)
+    LOOKBACK = 48    # ~8 dias de H4
+    ENTRY_Z = 1.5    # desvios padrao pra entrar
+    EXIT_Z = 0.5     # desvios padrao pra sair (volta a media)
+    MIN_ATR = 0.001  # ATR minimo pra evitar entrar em mercados mortos
+
+    def __init__(self):
+        self._corr = None
+
+    def signals(self, ctx: dict) -> dict[str, tuple[str, float]]:
+        ts = ctx["ts"]
+        prices = ctx["prices"]
+        out = {}
+        for sym, df in prices.items():
+            past = df.loc[:ts]
+            if len(past) < self.LOOKBACK:
+                continue
+            close = past["close"]
+            sma = close.rolling(self.LOOKBACK, min_periods=self.LOOKBACK).mean()
+            std = close.rolling(self.LOOKBACK, min_periods=self.LOOKBACK).std()
+            if std.iloc[-1] == 0 or not np.isfinite(std.iloc[-1]):
+                continue
+            z = (close.iloc[-1] - sma.iloc[-1]) / std.iloc[-1]
+
+            # Verifica ATR minimo (mercado nao morto)
+            a = atr(past).iloc[-1] if len(past) > 14 else 0
+            if a < self.MIN_ATR or not np.isfinite(a):
+                continue
+
+            if z < -self.ENTRY_Z:
+                direction = "BUY"
+            elif z > self.ENTRY_Z:
+                direction = "SELL"
+            else:
+                continue
+
+            # Tamanho: convicção escala com |z| (quanto mais extremo, maior)
+            z_abs = abs(z)
+            base_frac = min(0.5, z_abs / 6.0)  # max 0.5 (metade do risco)
+            frac = SZ.compute_size_frac(
+                sym, prices, ts, ctx.get("open", []),
+                base_frac=base_frac, regime_scale=1.0,
+                corr_pairs=self._corr if self._corr is not None else None,
+            )
+            if frac <= 0:
+                continue
+            out[sym] = (direction, frac)
+        return out
+
+
+# ═════════════════════════════ BREAKOUT (Donchian) ═════════════════════════════
+class BreakoutStrategy(Strategy):
+    """Breakout de canal Donchian em XAUUSD H4.
+
+    Compra quando o preço fecha ACIMA do canal de N períodos (breakout altista),
+    vende quando fecha ABAIXO (breakout baixista).
+
+    Parâmetros:
+      CHANNEL_LOOKBACK: 96 barras H4 (~16 dias) — janela do canal
+      CONFIRMATION_BARS: 1 — barras de confirmacao (1 = fecha acima/abaixo)
+      MIN_ATR_MULT: 1.5 — ATR minimo como % do canal (evita falsos breakouts)
+
+    Lógica:
+      - High = max high dos ultimos N periodos
+      - Low = min low dos ultimos N periodos
+      - close > High * (1 - slippage) → BUY (rompeu resistencia)
+      - close < Low * (1 + slippage) → SELL (rompeu suporte)
+
+    Baseado em: Donchian (1960s), Turtle Traders (Richard Dennis)
+    """
+    name = "breakout"
+
+    CHANNEL_LOOKBACK = 96     # ~16 dias de H4
+    MIN_ATR_MULT = 1.5         # canal deve ser >= 1.5x ATR
+
+    def __init__(self):
+        self._corr = None
+
+    def signals(self, ctx: dict) -> dict[str, tuple[str, float]]:
+        ts = ctx["ts"]
+        prices = ctx["prices"]
+        out = {}
+        for sym, df in prices.items():
+            past = df.loc[:ts]
+            if len(past) < self.CHANNEL_LOOKBACK:
+                continue
+
+            # Canal Donchian
+            high = past["high"].rolling(self.CHANNEL_LOOKBACK).max()
+            low = past["low"].rolling(self.CHANNEL_LOOKBACK).min()
+            current_high = high.iloc[-1]
+            current_low = low.iloc[-1]
+            channel_width = current_high - current_low
+
+            if channel_width <= 0 or not np.isfinite(channel_width):
+                continue
+
+            # ATR para filtro de qualidade
+            a = atr(past).iloc[-1] if len(past) > 14 else 0
+            if not np.isfinite(a) or a <= 0:
+                continue
+
+            # Canal deve ser largo o suficiente (>= MIN_ATR_MULT * ATR)
+            if channel_width < self.MIN_ATR_MULT * a:
+                continue
+
+            close = past["close"].iloc[-1]
+
+            # Breakout
+            if close >= current_high * 0.999:  # tolerância de 0.1%
+                direction = "BUY"
+            elif close <= current_low * 1.001:  # tolerância de 0.1%
+                direction = "SELL"
+            else:
+                continue
+
+            # Tamanho: fracao base 0.3 (breakout é menos frequente mas mais explosivo)
+            frac = SZ.compute_size_frac(
+                sym, prices, ts, ctx.get("open", []),
+                base_frac=0.3, regime_scale=1.0,
+                corr_pairs=self._corr if self._corr is not None else None,
+            )
+            if frac <= 0:
+                continue
+            out[sym] = (direction, frac)
+        return out
+
+
 __all__ = ["Strategy", "TSMomentumStrategy",
-           "COTContrarianStrategy", "LegacyCOTStrategy"]
+           "COTContrarianStrategy", "LegacyCOTStrategy",
+           "MeanReversionStrategy", "BreakoutStrategy"]

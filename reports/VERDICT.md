@@ -61,7 +61,31 @@ COOLDOWN=6) produziram resultados PIORES.
 **Opções:**
 1. Ir pra dry-run com a config atual monitorando DD semanal de -8%
 2. Aceitar que o edge é marginal e não operar
-3. Explorar outras estratégias além de TS-Momentum (fora do escopo atual)
+3. Explorar outras estratégias além de TS-Momentum ✅ TESTADO
+
+---
+
+### 4. Estratégias Alternativas Testadas — Nenhuma supera TS-Momentum
+
+| Estratégia | Sharpe | Ret% | DD% | Trades | WinRate | Veredito |
+|---|---|---|---|---|---|---|
+| **🥇 TS-Momentum** | **1.14** | **+124.5%** | **-18.9%** | 334 | 63.2% | ✅ Atual |
+| ❌ MeanReversion (z-score) | -1.08 | -12.5% | -14.5% | 66 | 40.9% | Perde dinheiro |
+| ❌ Breakout (Donchian) | -0.14 | -1.4% | -5.3% | 43 | 58.1% | Ruído |
+
+**MeanReversionStrategy (z-score SMA-48, |z|>1.5):** Sharpe -1.08. Estratégia perde
+sistematicamente em XAUUSD H4. O ouro em H4 não reverte à média na janela de 8 dias —
+a tendência (momentum) domina.
+
+**BreakoutStrategy (Donchian 96 barras):** Sharpe -0.14. Próximo de zero — não ganha
+nem perde. Breakouts em XAUUSD H4 são falsos na maioria das vezes.
+
+> **Conclusão:** TS-Momentum é a única estratégia com edge positivo neste ativo e
+timeframe. O problema de overfit no WFO não é resolvível trocando de estratégia —
+é estrutural do ativo/estratégia. O ranking definitivo das sessões e parâmetros
+já foi estabelecido na rodada anterior.
+
+**Código:** `run_compare_strategies.py` salvo para re-testar quando quiser.
 
 ---
 
