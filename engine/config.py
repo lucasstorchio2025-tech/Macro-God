@@ -291,7 +291,7 @@ DXY_LIQUIDITY_STRESS_LOOKBACK_BARS = 4      # janela H4 pra calcular % change
 # ───────────────────────── MOMENTUM (TS-mom) ─────────────────────────
 # Moskowitz/Ooi/Pedersen 2012: olha retorno passado N períodos, vai LONG se > 0,
 # SHORT se < 0. Janela "264 barras H4" ≈ 1 ano em base 4h (~6 barras/dia × 44 sem).
-MOMENTUM_LOOKBACK_BARS = 264
+MOMENTUM_LOOKBACK_BARS = 264    # Moskowitz/Ooi/Pedersen 2012: olha retorno passado N períodos
 MOMENTUM_SKIP_BARS     = 24       # pula último dia pra não captar rebote de curto
 MOMENTUM_MIN_ABS_R     = 0.01     # ignora sinais pífios (|retorno| < 1%)
 

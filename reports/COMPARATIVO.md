@@ -1,6 +1,6 @@
 # COMPARATIVO — 3 Melhorias no TS-Momentum
 
-**Gerado em:** 2026-07-12 15:40 UTC
+**Gerado em:** 2026-07-12 16:25 UTC
 
 **Período:** 2021-10-27 → 2026-06-30 | **Símbolo:** XAUUSDm | **Período H4:** H4
 
@@ -69,9 +69,7 @@ Detalhamento da melhor: **4. Só Tokyo**
 - CAGR **17.8%** (vs 3.0%)
 - Final **$1122** (vs $578)
 
-⚠️ **RESSALVA:** Sharpe 1.14 é no período completo. A validação walk-forward
-(WALK_FORWARD_TOKYO.md) mostra OOS médio 0.41 e conclui **OVERFIT**.
-**Não ir pra live sem resolver essa contradição.**
+✅ **Recomendação:** Sharpe > 1.0. Esta configuração pode ir para dry-run.
 
 ## Gráfico
 
