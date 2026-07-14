@@ -58,18 +58,9 @@ def build_decision_context(intel: dict, news_data: Optional[dict],
     dxy = rs.get("dollar_index")
     dxy_chg = rs.get("dollar_index_pct_change")
 
-    # ── Sessão ──
-    h = now.hour
-    if 0 <= h < 4:
-        session = "Sydney"
-    elif 4 <= h < 8:
-        session = "Tokyo"
-    elif 7 <= h < 16:
-        session = "London"
-    elif 13 <= h < 22:
-        session = "NewYork"
-    else:
-        session = "Off"
+    # ── Sessão (usa engine.utils.session_of, mesma lógica do filtro e dashboard) ──
+    from engine.utils import session_of
+    session = session_of(now)
 
     # ── COT positioning bruto ──
     cot = intel.get("cot_positioning", {}) if intel else {}

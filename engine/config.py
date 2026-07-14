@@ -53,7 +53,7 @@ MAX_OPEN_POSITIONS  = 1          # XAUUSD — máximo 1 posição (apenas 1 sím
 # Modo dry-run: limites MAIS APERTADOS para proteger capital durante validação
 # ao vivo (mesmo com overfit confirmado no WFO).
 # Ativar colocando DRY_RUN_MODE = True antes de ir pra live.
-DRY_RUN_MODE = True              # True = ativa limites mais apertados para dry-run
+DRY_RUN_MODE = False             # False = trades reais na conta demo
 DRY_RUN_WEEKLY_DD_PCT = 8.0      # Stop semanal apertado em dry-run (-8%)
 DRY_RUN_DAILY_DD_PCT = 8.0       # Stop diário apertado em dry-run (-8%)
 DRY_RUN_MAX_POSITIONS = 1        # Máximo 1 posição em dry-run (conservador)

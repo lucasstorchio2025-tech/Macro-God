@@ -54,3 +54,6 @@ reports/TUNE_RESULT.json
 
 # ─── Logs ───
 *.log
+
+# ─── Artifacts ───
+nul
