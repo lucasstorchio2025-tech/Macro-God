@@ -32,8 +32,13 @@ engine/cache/*.csv
 
 # ─── Runtime state / logs ───
 bot/bot_state.json
+bot/bot_state.corrupt_*
 bot/trade_log.jsonl
 bot/decision_log.jsonl
+
+# ─── Launcher / PID files ───
+bot/run/
+scripts/*.pid
 
 # ─── Dados de mercado gerados ───
 market_intelligence.json
@@ -57,3 +62,8 @@ reports/TUNE_RESULT.json
 
 # ─── Artifacts ───
 nul
+nssm.zip
+Ollama
+*.zip
+temp_nssm/
+query

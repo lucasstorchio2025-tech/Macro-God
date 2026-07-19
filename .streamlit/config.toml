@@ -1,0 +1,14 @@
+[server]
+address = "127.0.0.1"
+port = 8501
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "dark"
+
+[password]
+# Senha carregada do .env via DASHBOARD_PASSWORD
+# O Streamlit lê esta variável de ambiente automaticamente se definida
