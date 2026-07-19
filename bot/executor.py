@@ -90,7 +90,11 @@ def run_once(cycle_num: int) -> dict:
     # 1. MT5 connection
     if not _bridge.ensure_connected():
         summary["actions"].append({"step": "mt5_connect", "ok": False})
-        _notifier.notify("MT5 não conectou", "error")
+        # Notifica só 1 vez por sequência de falhas (não a cada ciclo)
+        if not getattr(_bridge, "_notified_failure", False):
+            _notifier.notify("MT5 não conectou — mercado fechado ou sessão expirada. "
+                            "Bot aguarda reconexão automática.", "error")
+            _bridge._notified_failure = True
         return summary
 
     acc = _bridge.account()

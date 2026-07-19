@@ -68,6 +68,7 @@ class MT5Bridge:
     _connect_attempts: int = 0
     _max_attempts: int = 5
     _base_delay: float = 1.0  # segundos
+    _notified_failure: bool = False  # previne spam Telegram em MT5 offline
 
     def __init__(self) -> None:
         self._login = int(settings.exness_login)
@@ -76,9 +77,17 @@ class MT5Bridge:
 
     # ── Conexão ─────────────────────────────────────────────────────────
     def connect(self) -> bool:
-        """Conecta uma vez. Retry exponencial até _max_attempts."""
+        """Conecta uma vez. Retry exponencial até _max_attempts.
+
+        Reset de _connect_attempts em cada chamada → permite reconexão
+        após falha anterior (sessão expiry, broker reinicia, etc).
+        """
         if self._connected:
             return True
+
+        # Reset: cada tentativa de conexão começa do zero
+        self._connect_attempts = 0
+        self._notified_failure = False  # reset aviso de falha
 
         while self._connect_attempts < self._max_attempts:
             self._connect_attempts += 1
