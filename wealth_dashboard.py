@@ -336,6 +336,101 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ═══════════════════════════ 1.5. AUTONOMOUS COMMANDER ═══════════════════════════
+
+st.subheader("🤖 Autonomous Commander — IA Central")
+
+# Carrega status do Commander do arquivo (NÃO cria nova instância!)
+# O Commander real roda no processo do executor. O dashboard só lê o arquivo.
+commander_status = None
+commander_error = None
+try:
+    from engine.commander import AutonomousCommander
+    commander_status = AutonomousCommander.load_status_from_file(STATE_PATH)
+    if not commander_status:
+        commander_error = "Commander ainda não salvou estado (aguardando primeiro ciclo)"
+except Exception as e:
+    commander_error = str(e)[:100]
+
+if commander_status:
+    oracle = commander_status.get("oracle", {})
+    evolution = commander_status.get("evolution", {})
+    last_dec = commander_status.get("last_decision", {})
+    regime = oracle.get("regime", "unknown")
+    
+    st.markdown(f'<div style="background-color:#1a1a2e; padding:15px; border-radius:10px; border-left:6px solid #2196F3; margin-bottom:15px;">', unsafe_allow_html=True)
+    
+    # Row 1: Stats
+    cmd_cols = st.columns(5)
+    with cmd_cols[0]:
+        rc = regime_color(regime)
+        st.markdown(f'<div style="text-align:center;"><span style="font-size:11px;color:#888;">REGIME</span><br><span style="font-size:24px;font-weight:bold;color:{rc};">{regime_emoji(regime)} {regime.upper()}</span></div>', unsafe_allow_html=True)
+    with cmd_cols[1]:
+        st.metric("🔄 Ciclos", commander_status.get("cycle_count", 0))
+    with cmd_cols[2]:
+        st.metric("📊 Decisões", commander_status.get("decisions_made", 0))
+    with cmd_cols[3]:
+        st.metric("⚡ Evoluções", evolution.get("count", 0))
+    with cmd_cols[4]:
+        st.metric("🔧 Parâmetros", len(evolution.get("parameters", [])))
+    
+    # Row 2: Parameters
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Parameters table
+    params = evolution.get("parameters", [])
+    if params:
+        st.markdown("**🔧 Parâmetros Evolutivos**")
+        param_cols = st.columns(min(len(params), 5))
+        for i, p in enumerate(params):
+            with param_cols[i % 5]:
+                name = p.get("name", "").replace("_", " ")
+                val = p.get("value", 0)
+                conf = p.get("confidence", 1.0)
+                conf_color = "#4CAF50" if conf > 0.7 else "#FF9800" if conf > 0.3 else "#F44336"
+                st.markdown(f'<div style="background-color:#1a1a1a; padding:8px; border-radius:6px; margin-bottom:6px; text-align:center;">'
+                          f'<span style="font-size:10px;color:#888;">{name}</span><br>'
+                          f'<span style="font-size:18px;font-weight:bold;">{val}</span><br>'
+                          f'<span style="font-size:10px;color:{conf_color};">conf: {conf:.0%}</span></div>',
+                          unsafe_allow_html=True)
+    
+    # Last decision
+    if last_dec:
+        st.markdown(f'<div style="background-color:#0a0a0a; padding:10px; border-radius:8px; margin-top:8px;">'
+                   f'<span style="font-size:11px;color:#888;">ÚLTIMA DECISÃO DA IA</span><br>'
+                   f'<span style="font-size:14px;">'
+                   f'<b>Ação:</b> {last_dec.get("action","?")} | '
+                   f'<b>Direção:</b> {last_dec.get("direction","?")} | '
+                   f'<b>Confiança:</b> {last_dec.get("confidence",0):.0%} | '
+                   f'<b>Estratégia:</b> {last_dec.get("selected_strategy","?")} | '
+                   f'<b>Driver:</b> {last_dec.get("primary_driver","?")}</span><br>'
+                   f'<span style="font-size:11px;color:#aaa;">{last_dec.get("reasoning","")[:150]}</span></div>',
+                   unsafe_allow_html=True)
+    
+    # Performance by regime
+    perf_by_regime = oracle.get("performance_by_regime", {})
+    if perf_by_regime:
+        st.markdown("**📊 Performance por Regime**")
+        perf_cols = st.columns(min(len(perf_by_regime), 4))
+        for i, (reg, data) in enumerate(perf_by_regime.items()):
+            with perf_cols[i % 4]:
+                rc = regime_color(reg)
+                trades = data.get("trades", 0)
+                wins = data.get("wins", 0)
+                losses = data.get("losses", 0)
+                pnl = data.get("total_pnl", 0)
+                wr = f"{wins/max(1,trades):.0%}" if trades > 0 else "—"
+                st.markdown(f'<div style="background-color:#1a1a1a; padding:8px; border-radius:6px; border-left:4px solid {rc};">'
+                          f'<b style="color:{rc};">{reg}</b> | {trades} trades | WR: {wr} | PnL: <span style="color:{"#4CAF50" if pnl>=0 else "#F44336"};">${pnl:+.2f}</span></div>',
+                          unsafe_allow_html=True)
+    
+    st.markdown(f'<div style="font-size:10px;color:#555;margin-top:4px;">'
+               f'Último Oracle: {ago(commander_status.get("last_oracle_update",""))} | '
+               f'Última Evolução: {ago(commander_status.get("last_evolution_update",""))}</div>',
+               unsafe_allow_html=True)
+else:
+    st.info(f"⚙️ Commander inativo: {commander_error or 'Nunca iniciado'}. As decisões estão sendo tomadas pelo sistema legado (filtros manuais).")
+
 st.divider()
 
 # ═══════════════════════════ 2. TOP ROW: Métricas ═══════════════════════════

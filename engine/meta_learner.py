@@ -37,7 +37,7 @@ from engine.meta_config import MetaState, DEFAULT_RISK_MULT
 # ── Configuracao Ollama ──
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("META_LLM_MODEL", "gemma4-opt:latest")
-OLLAMA_TIMEOUT = 30  # segundos
+OLLAMA_TIMEOUT = None  # sem timeout — Ollama pode demorar o quanto precisar
 
 # ── Paths ──
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -164,7 +164,7 @@ def summarize_decisions(decisions: list[dict]) -> tuple[str, str]:
 # ═════════════════════════════ CHAMADA OLLAMA ═════════════════════════════
 
 def call_ollama(prompt: str, model: str = OLLAMA_MODEL,
-                timeout: int = OLLAMA_TIMEOUT) -> Optional[str]:
+                timeout: Optional[int] = OLLAMA_TIMEOUT) -> Optional[str]:
     """Chama o modelo via Ollama API.
 
     Tenta API HTTP primeiro (requests), depois fallback para subprocess.
