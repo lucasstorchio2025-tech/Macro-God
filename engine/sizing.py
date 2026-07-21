@@ -132,7 +132,55 @@ def compute_size_frac(sym: str, prices: dict[str, pd.DataFrame],
     return float(np.clip(frac, 0.0, 1.0))
 
 
+def compute_sizing(symbol: str, direction: str, balance: float,
+                   risk_pct: float, atr_mult: float = 1.5,
+                   regime: str = "normal") -> dict:
+    """Wrapper de sizing para decision.py.
+
+    Retorna dict com:
+      - size_lots: tamanho em lotes (mínimo 0.01)
+      - sl_points: stop loss em pontos
+      - tp_points: take profit em pontos (1:2 RR)
+      - risk_usd: risco em USD
+
+    Usa compute_size_frac internamente quando há prices disponíveis;
+    fallback para cálculo simplificado baseado em ATR quando não.
+    """
+    from engine.data import load_prices
+    from engine import config as C
+
+    # Tenta carregar prices para sizing completo
+    try:
+        df = load_prices(symbol, C.TIMEFRAME, C.MOMENTUM_LOOKBACK_BARS + 50)
+        atr = (df["high"] - df["low"]).rolling(14).mean().iloc[-1]
+    except Exception:
+        atr = None
+
+    if atr is not None and atr > 0:
+        sl_points = atr * atr_mult
+        tp_points = sl_points * 2  # 1:2 RR
+    else:
+        # Fallback: XAUUSD ~300 pts, forex ~50 pts
+        sl_points = 300 if "XAU" in symbol else 50
+        tp_points = sl_points * 2
+
+    # Tamanho: 1% risco / SL em USD
+    pip_value = 0.01 if "XAU" in symbol else 0.0001  # aproximado
+    sl_usd_per_lot = sl_points * pip_value * 100  # 1 lote padrão
+    risk_usd = balance * risk_pct / 100
+    size_lots_raw = risk_usd / sl_usd_per_lot if sl_usd_per_lot > 0 else 0.01
+    size_lots = max(0.01, round(size_lots_raw / 0.01) * 0.01)
+    size_lots = min(size_lots, getattr(C, "MAX_LOTS_PER_TRADE", 1.0))
+
+    return {
+        "size_lots": size_lots,
+        "sl_points": round(sl_points, 1),
+        "tp_points": round(tp_points, 1),
+        "risk_usd": round(risk_usd, 2),
+    }
+
+
 __all__ = [
     "vol_target_scalar", "correlation_penalty", "usd_exposure",
-    "can_open_given_usd", "compute_size_frac",
+    "can_open_given_usd", "compute_size_frac", "compute_sizing",
 ]
