@@ -30,7 +30,13 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 #   USDJPY/XAUUSD sobem quando USD sobe  → beta USD positivo.
 #   (Usado pelo sizing.py pra somar exposição USD agregada — o erro do bot antigo
 #    era tratar EURUSD + GBPUSD como 2 apostas independentes; são a mesma aposta USD.)
-SYMBOLS: list[str] = ["XAUUSDm"]   # Apenas XAUUSD — TS-Momentum não funciona em forex (comprovado)
+SYMBOLS: list[str] = [
+    "XAUUSDm",   # ouro — walk-forward confirma momentum funciona (SR OOS=0.69, 7/8 janelas)
+    "XAGUSDm",   # prata — teste pendente (walk-forward multisymbol)
+    "EURUSDm",   # forex — claim "não funciona" NÃO validada com walk-forward (pendente)
+    "GBPUSDm",   # forex — idem
+    "USDJPYm",   # forex — idem
+]
 
 USD_BETA: dict[str, float] = {
     "XAUUSDm": -1.0,   # USD sobe → ouro desce (em USD)

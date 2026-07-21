@@ -183,6 +183,32 @@ class MT5Bridge:
             logger.exception("copy_rates_from_pos(%s) falhou: %s", symbol, exc)
             return None
 
+    # ── Proxies para o módulo mt5 (compatibilidade com strategy_bridge.py) ──
+    def symbol_select(self, symbol: str, enable: bool = True) -> bool:
+        """Proxy para mt5.symbol_select — seleciona símbolo no Market Watch."""
+        if not self.ensure_connected():
+            return False
+        try:
+            return bool(mt5.symbol_select(symbol, enable))
+        except Exception as exc:
+            logger.warning("symbol_select(%s) falhou: %s", symbol, exc)
+            return False
+
+    def copy_rates_from_pos(self, symbol: str, timeframe: int, start: int, count: int):
+        """Proxy para mt5.copy_rates_from_pos."""
+        if not self.ensure_connected():
+            return None
+        try:
+            return mt5.copy_rates_from_pos(symbol, timeframe, start, count)
+        except Exception as exc:
+            logger.warning("copy_rates_from_pos(%s) falhou: %s", symbol, exc)
+            return None
+
+    # Constant exposure for strategy_bridge compatibility
+    @property
+    def TIMEFRAME_H4(self) -> int:
+        return mt5.TIMEFRAME_H4
+
     # ── Execução ────────────────────────────────────────────────────────
     def send(self, req: OrderRequest) -> OrderResult:
         """Envia ordem via mt5.order_send; retorna OrderResult padronizado."""
