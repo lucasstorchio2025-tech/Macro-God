@@ -305,10 +305,10 @@ RESPOND WITH VALID JSON ONLY:
             
             # Filtra símbolos abertos para não sugerir trade duplicado
             open_syms = ctx.get("open_symbols", [])
-            signals = ctx.get("signals", "")
+            signals = ctx.pop("signals", "")  # remove do ctx pra não duplicar no format()
             if open_syms:
                 signals += "\n  ⚠️ Already open: " + ", ".join(open_syms)
-            
+
             prompt = self.DECISION_PROMPT.format(**ctx, signals=signals)
 
             resp = requests.post(
@@ -346,36 +346,14 @@ RESPOND WITH VALID JSON ONLY:
             return None
 
     def _fallback_decision(self, ctx: CommanderDecisionContext, now: datetime) -> CommanderOrder:
-        """Decisão de fallback quando LLM está indisponível."""
-        # Pega o primeiro sinal disponível
-        for sym, val in ctx.signals.items():
-            if isinstance(val, tuple):
-                direction, size_frac = val
-            else:
-                direction = val
-                size_frac = 0.5 if direction != "NONE" else 0
-            
-            if direction != "NONE" and sym not in ctx.open_symbols:
-                return CommanderOrder(
-                    action="trade",
-                    symbol=sym,
-                    direction=direction,
-                    risk_pct=C.RISK_PER_TRADE_PCT * ctx.meta.get_risk_multiplier() if ctx.meta else C.RISK_PER_TRADE_PCT,
-                    size_frac=size_frac,
-                    stop_atr_mult=C.ATR_STOP_MULT,
-                    rr_target=C.RR_TARGET_MULT,
-                    selected_strategy="ts_momentum",
-                    confidence=0.5,
-                    reasoning=f"Sinal {direction} {sym} detectado. LLM indisponível, usando fallback seguro.",
-                    regime=ctx.oracle.thesis.regime if ctx.oracle else "normal",
-                    risk_multiplier=ctx.meta.get_risk_multiplier() if ctx.meta else 1.0,
-                    timestamp=now.isoformat(),
-                )
+        """Decisão de fallback quando LLM está indisponível.
         
+        NÃO abre trade sem LLM — espera confirmação humana/IA.
+        """
         return CommanderOrder(
             action="wait",
-            reasoning="Nenhum sinal disponível e LLM indisponível.",
-            confidence=0.5,
+            reasoning="LLM indisponível — aguardando confirmação para abrir trade.",
+            confidence=0.0,
             timestamp=now.isoformat(),
         )
 
