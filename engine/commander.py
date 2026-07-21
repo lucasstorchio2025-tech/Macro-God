@@ -276,7 +276,12 @@ RESPOND WITH VALID JSON ONLY:
         if skip_llm:
             print("[Commander] LLM skip: meta_learner ja consultou neste ciclo", flush=True)
             return self._fallback_decision(ctx, now)
-        
+
+        # Garante modelo disponível
+        if not self._ensure_model():
+            print("[Commander] Modelo LLM não disponível e falhou ao baixar", flush=True)
+            return self._fallback_decision(ctx, now)
+
         llm_order = self._consult_llm({
             "regime": regime, "risk_score": risk_score,
             "vix": vix, "dxy": dxy,
@@ -297,6 +302,30 @@ RESPOND WITH VALID JSON ONLY:
             return self._fallback_decision(ctx, now)
 
         return llm_order
+
+    def _ensure_model(self) -> bool:
+        """Garante que o modelo está disponível, puxa se não estiver."""
+        try:
+            import requests
+            # Lista modelos disponíveis
+            resp = requests.get(f"{self.ollama_host}/api/tags", timeout=5)
+            if resp.status_code != 200:
+                return False
+            models = resp.json().get("models", [])
+            if any(m.get("name", "").startswith(self.ollama_model.split(":")[0]) for m in models):
+                return True
+            
+            # Puxa modelo automaticamente
+            print(f"[Commander] Modelo {self.ollama_model} não encontrado. Baixando...")
+            pull_resp = requests.post(
+                f"{self.ollama_host}/api/pull",
+                json={"name": self.ollama_model, "stream": False},
+                timeout=300,
+            )
+            return pull_resp.status_code == 200
+        except Exception as e:
+            print(f"[Commander] Erro ao verificar/baixar modelo: {e}")
+            return False
 
     def _consult_llm(self, ctx: dict, now: datetime) -> Optional[CommanderOrder]:
         """Consulta o LLM para a decisão final."""
